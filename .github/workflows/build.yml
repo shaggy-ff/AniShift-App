@@ -19,7 +19,9 @@ jobs:
         node-version: '18'
 
     - name: Install Dependencies
-      run: npm install
+      run: |
+        npm install
+        npm install -g @capacitor/cli
 
     - name: Sync Capacitor
       run: npx cap sync android
