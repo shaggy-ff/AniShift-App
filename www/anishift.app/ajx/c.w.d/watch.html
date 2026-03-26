@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Watch Anime - AniShift</title>
+    <meta name="monetag" content="a6561bd5e8e17a7964ebf6b31defb858">
+    <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a0b10;
+            --bg-secondary: #14151e;
+            --accent-color: #1e90ff;
+            --text-light: #ffffff;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            background-color: #000;
+            font-size: clamp(14px, 4.2vw, 18px);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            width: 100%;
+            margin: 0;
+            min-height: 100dvh;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: calc(2.4rem + env(safe-area-inset-bottom));
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Nav Overlay */
+        .nav-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Player Section */
+        .player-container {
+            width: 100%;
+            position: relative;
+            background: #000;
+            aspect-ratio: 16/9;
+            margin-top: 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .dummy-player {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .player-play-btn {
+            width: 4rem;
+            height: 4rem;
+            background: rgba(30, 144, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Info Section */
+        .info-section {
+            padding: 1.5rem 1.25rem;
+        }
+
+        .anime-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            text-decoration: none;
+            display: block;
+        }
+
+        .ep-meta-line {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .ep-badge {
+            background: var(--accent-color);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .meta-dot {
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        .meta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Server & Controls */
+        .playback-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-btn {
+            background: #1c1d24;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #2a2b35;
+        }
+
+        .control-btn.primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .control-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .view-more-ep-btn {
+            background: #1c1d24;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.6rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem auto;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .view-more-ep-btn:hover {
+            background: #2a2b35;
+        }
+
+        /* Sections */
+        .section-h {
+            font-size: 0.95rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02rem;
+            margin-bottom: 1.25rem;
+            color: #fff;
+        }
+
+        .section-h::before {
+            content: '';
+            width: 0.1875rem;
+            height: 1rem;
+            background: var(--accent-color);
+            border-radius: 0.125rem;
+        }
+
+        /* Episodes */
+        .episodes-section {
+            padding: 0 1.25rem 2rem;
+        }
+
+        .ep-tabs {
+            display: flex;
+            gap: 0.625rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            margin-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+
+        .ep-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ep-tab {
+            white-space: nowrap;
+            padding: 0.6rem 1.25rem;
+            background: #1c1d24;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #9ca3af;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ep-tab.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+
+        .ep-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .ep-item {
+            display: flex;
+            gap: 0.875rem;
+            text-decoration: none;
+            color: #fff;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            transition: 0.2s;
+        }
+
+        .ep-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .ep-item.active {
+            background: rgba(30, 144, 255, 0.1);
+            border: 1px solid rgba(30, 144, 255, 0.2);
+        }
+
+        .ep-thumbnail {
+            width: 7.5rem;
+            aspect-ratio: 16/9;
+            position: relative;
+            background: #1c1d24;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .ep-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .ep-play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .ep-play-overlay i {
+            font-size: 1rem;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ep-item.active .ep-play-overlay i {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .ep-details {
+            flex: 1;
+            padding-top: 0.1rem;
+        }
+
+        .ep-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 0.2rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .ep-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Comments Section */
+        .comment-section {
+            padding: 0 1.8rem 1rem;
+        }
+
+        .comment-input-wrap {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
+        }
+
+        .user-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .input-box textarea {
+            width: 100%;
+            background: #1c1d24;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-size: 0.85rem;
+            resize: none;
+            outline: none;
+            transition: 0.3s;
+            min-height: 3rem;
+        }
+
+        .input-box textarea:focus {
+            border-color: var(--accent-color);
+            background: #252630;
+        }
+
+        .comment-btn {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            float: right;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            clear: both;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 1rem;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .comment-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        .reply-avatar {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .comment-content-main {
+            flex: 1;
+            position: relative;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .comment-user-info h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .comment-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .comment-menu-btn {
+            padding: 0.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: -0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        .comment-menu-btn:hover {
+            color: #fff;
+        }
+
+        .comment-text {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #e5e7eb;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .comment-footer {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .btn-like-pill {
+            background: #252630;
+            color: var(--text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-like-pill i { font-size: 0.9rem; }
+        .btn-like-pill:hover, .btn-like-pill.active {
+            background: rgba(30, 144, 255, 0.1);
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-reply-text {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .replies-container {
+            margin-left: 2.5rem;
+            margin-top: 0.75rem;
+            border-left: 2px solid rgba(255,255,255,0.03);
+            padding-left: 0.75rem;
+        }
+        .reply-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-reply-text:hover { color: #fff; }
+
+        /* Context Menu */
+        .comment-actions-menu {
+            position: absolute;
+            top: 1.5rem;
+            right: 0;
+            background: #1c1d24;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 0.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            min-width: 120px;
+        }
+
+        .comment-actions-menu.active { display: flex; }
+
+        .action-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .action-item.delete:hover { background: rgba(255, 71, 87, 0.1); color: #ff4757; }
+
+        /* Recommendations Section */
+        .rec-section {
+            padding: 0 1.8rem 2.5rem;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        /* Recommendations */
+        .rec-card {
+            width: 100%;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            transition: 0.3s;
+        }
+
+        .rec-img-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1/1.4;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: #11121a;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--accent-color);
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10000;
+            transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .rec-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rec-tag-hd {
+            position: absolute;
+            top: 0.4rem;
+            left: 0.4rem;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            color: #fff;
+            font-size: 0.55rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 2px;
+            font-weight: 900;
+            z-index: 5;
+        }
+
+        .ep-tag {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.4rem;
+            background: #2196F3;
+            color: #fff;
+            font-size: 0.62rem;
+            padding: 0.18rem 0.35rem;
+            border-radius: 0.375rem;
+            z-index: 10;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            line-height: 1;
+        }
+
+        .cc-icon {
+            background: #fff;
+            color: #2196F3;
+            font-size: 0.42rem;
+            font-weight: 900;
+            padding: 0.1rem 0.15rem;
+            border-radius: 0.15rem;
+            text-transform: lowercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .rec-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+            padding: 0 0.1rem;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 1.5625rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 2.5rem);
+            max-width: 410px;
+            background: #11121a;
+            height: 4.0625rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 0.625rem;
+            border-radius: 2.5rem;
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .bottom-nav a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #636672;
+            transition: all 0.4s;
+            height: 3rem;
+            border-radius: 1.875rem;
+            padding: 0 0.9375rem;
+        }
+
+        .bottom-nav a.active {
+            background: #ffffff;
+            color: #000;
+            padding: 0 1.5625rem;
+            gap: 0.75rem;
+        }
+
+        .bottom-nav a i {
+            font-size: 1.35rem;
+        }
+
+        .bottom-nav a span {
+            display: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .bottom-nav a.active span {
+            display: block;
+        }
+
+        /* Loader */
+        #loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+        }
+
+        #content {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i></div>
+
+    <div id="content">
+        <div class="nav-overlay">
+            <a id="backBtn" href="#" class="nav-btn"><i class="fa-solid fa-chevron-left"></i></a>
+        </div>
+
+        <section class="player-container">
+            <div id="playerArea" class="dummy-player">
+                <div class="player-play-btn" onclick="startPlayer()">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <a href="#" id="animeTitle" class="anime-title">Loading...</a>
+            <div class="ep-meta-line">
+                <span id="epBadge" class="ep-badge">EP 01</span>
+                <span class="meta-dot"></span>
+                <span id="metaYear" class="meta-text">2024</span>
+                <span class="meta-dot"></span>
+                <span id="metaGenre" class="meta-text">Action</span>
+            </div>
+
+            <div class="playback-controls">
+                <a href="#" id="prevBtn" class="control-btn"><i class="fa-solid fa-backward-step"></i> Previous</a>
+                <a href="#" id="nextBtn" class="control-btn">Next <i class="fa-solid fa-forward-step"></i></a>
+            </div>
+
+        </section>
+
+        <section class="episodes-section">
+            <h2 class="section-h">All Episodes</h2>
+            <div id="epTabs" class="ep-tabs"></div>
+            <div id="epGrid" class="ep-grid">
+            </div>
+        </section>
+
+        <section class="comment-section">
+            <h2 class="section-h">Comments <span id="commentCount"
+                    style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">(0)</span>
+            </h2>
+            <div class="comment-input-wrap">
+                <div class="input-box">
+                    <textarea id="commentInput" placeholder="Add a public comment..."></textarea>
+                    <button class="comment-btn" id="postBtn">Comment</button>
+                </div>
+            </div>
+            <div id="commentsList" class="comments-list">
+                <!-- Dynamic -->
+            </div>
+        </section>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="toastMsg"></span>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="modal-overlay">
+            <div class="login-modal-card">
+                <button class="modal-close" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
+                <div class="modal-flex">
+                    <div class="modal-cover">
+                        <img id="modalAnimeImg" src="" alt="">
+                    </div>
+                    <div class="modal-info">
+                        <h2>Login to Join</h2>
+                        <p>Join the Anishift community! Login now to share your thoughts, and connect with others.</p>
+                        <div class="modal-btns">
+                            <a href="../../auth.html" class="btn-m-login">Login</a>
+                            <a href="../../auth.html" class="btn-m-reg">Register</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                z-index: 10000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+            }
+
+            .login-modal-card {
+                background: #11121a;
+                width: 100%;
+                max-width: 550px;
+                border-radius: 1.5rem;
+                overflow: hidden;
+                position: relative;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .modal-close {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: rgba(255, 255, 255, 0);
+                border: none;
+                color: #fff;
+                width: 2.2rem;
+                height: 2.2rem;
+                border-radius: 50%;
+                cursor: pointer;
+                z-index: 10;
+            }
+
+            .modal-flex {
+                display: flex;
+                min-height: 250px;
+            }
+
+            .modal-cover {
+                width: 40%;
+                display: block;
+            }
+
+            .modal-cover img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .modal-info {
+                width: 60%;
+                padding: 2rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .modal-info h2 {
+                font-size: 1.5rem;
+                font-weight: 800;
+            }
+
+            .modal-info p {
+                color: var(--text-muted);
+                font-size: 0.85rem;
+                line-height: 1.6;
+            }
+
+            .modal-btns {
+                display: flex;
+                gap: 0.75rem;
+            }
+
+            .btn-m-login {
+                flex: 1;
+                background: var(--accent-color);
+                color: #000;
+                text-align: center;
+                padding: 0.8rem;
+                border-radius: 0.75rem;
+                font-weight: 700;
+                text-decoration: none;
+                font-size: 0.9rem;
+            }
+
+            .btn-m-reg {
+                flex: 1;
+                background: rgba(255, 255, 255, 0.05);
+                color: #fff;
+                text-align: center;
+                padding: 0.8rem;
+                border-radius: 0.75rem;
+                font-weight: 700;
+                text-decoration: none;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: 0.9rem;
+            }
+
+            @media (max-width: 600px) {
+                .modal-flex {
+                    flex-direction: column;
+                    min-height: auto;
+                }
+
+                .modal-cover {
+                    width: 100%;
+                    height: 160px;
+                }
+
+                .modal-info {
+                    width: 100%;
+                    padding: 1.5rem;
+                    text-align: center;
+                }
+
+                .modal-btns {
+                    flex-direction: column;
+                    width: 100%;
+                }
+            }
+        </style>
+
+        <section class="rec-section">
+            <h2 class="section-h">Related Anime</h2>
+            <div id="relatedGrid" class="rec-grid">
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const anilistId = urlParams.get('id');
+        const currentEp = parseInt(urlParams.get('ep')) || 1;
+
+        if (!anilistId) { window.location.href = '../../home.html'; }
+
+        // Firebase Config
+        const dbConfig = {
+            apiKey: "AIzaSyCMpcM6vnlZF_Vbr4FHOJiRph0EsCmLHuQ",
+            authDomain: "anizero-b135b.firebaseapp.com",
+            databaseURL: "https://anizero-b135b-default-rtdb.firebaseio.com",
+            projectId: "anizero-b135b",
+            storageBucket: "anizero-b135b.firebasestorage.app",
+            messagingSenderId: "301617908781",
+            appId: "1:301617908781:web:0662624b66a55b239dfca4"
+        };
+        const authConfig = {
+            apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
+            authDomain: "anishift-5d14b.firebaseapp.com",
+            databaseURL: "https://anishift-5d14b-default-rtdb.firebaseio.com",
+            projectId: "anishift-5d14b",
+            storageBucket: "anishift-5d14b.firebasestorage.app",
+            messagingSenderId: "390267133940",
+            appId: "1:390267133940:web:a735ebcab0c60295bc23a1",
+            measurementId: "G-6W05176VZP"
+        };
+
+        const dbApp = firebase.initializeApp(dbConfig, "dbApp");
+        const authApp = firebase.initializeApp(authConfig);
+        const db = dbApp.firestore();
+        const rtdb = authApp.database();
+        const auth = authApp.auth();
+
+        let replyingTo = null; // { id, name }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Update input avatar if it exists in UI
+                const navAvatars = document.querySelectorAll('.nav-avatar');
+                navAvatars.forEach(img => img.src = user.photoURL || '../../images/guest_avatar.png');
+            }
+        });
+
+        function getCommentPath() {
+            if (!currentAnime) return `comments/watch/${anilistId}/general`;
+            const isMovie = currentAnime.format === 'MOVIE';
+            const sub = isMovie ? 'movie' : `episodes/ep_${currentEp}`;
+            return `comments/watch/${anilistId}/${sub}`;
+        }
+
+        // Modal Logic
+        function openLoginModal() {
+            if (currentAnime) document.getElementById('modalAnimeImg').src = currentAnime.coverImage.extraLarge;
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        // Comments Logic
+        const postBtn = document.getElementById('postBtn');
+        const commentInput = document.getElementById('commentInput');
+
+        postBtn.addEventListener('click', () => {
+            const user = auth.currentUser;
+            if (!user) {
+                openLoginModal();
+                return;
+            }
+            const text = commentInput.value.trim();
+            if (!text) return;
+
+            postBtn.disabled = true;
+            postBtn.textContent = 'Posting...';
+
+            const commentData = {
+                uid: user.uid,
+                name: user.displayName || 'User',
+                avatar: user.photoURL || '../../images/guest_avatar.png',
+                text: text,
+                time: Date.now(),
+                likes: 0
+            };
+
+            const path = replyingTo ? `${getCommentPath()}/${replyingTo.id}/replies` : getCommentPath();
+
+            rtdb.ref(path).push(commentData)
+                .then(() => {
+                    commentInput.value = '';
+                    cancelReply();
+                    postBtn.disabled = false;
+                    postBtn.textContent = 'Comment';
+                    showToast(replyingTo ? 'Reply posted!' : 'Comment posted!');
+                    loadComments(); 
+                })
+                .catch(err => {
+                    showToast('Error: ' + err.message);
+                    postBtn.disabled = false;
+                    postBtn.textContent = 'Comment';
+                });
+        });
+
+        function setReply(id, name) {
+            const user = auth.currentUser;
+            if (!user) {
+                openLoginModal();
+                return;
+            }
+            replyingTo = { id, name };
+            commentInput.placeholder = `Replying to ${name}...`;
+            commentInput.focus();
+            
+            // Add a cancel button if not exists
+            if (!document.getElementById('cancelReplyBtn')) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.id = 'cancelReplyBtn';
+                cancelBtn.className = 'footer-action';
+                cancelBtn.style.marginLeft = '10px';
+                cancelBtn.style.color = 'var(--danger)';
+                cancelBtn.textContent = 'Cancel Reply';
+                cancelBtn.onclick = cancelReply;
+                commentInput.parentElement.appendChild(cancelBtn);
+            }
+        }
+
+        function cancelReply() {
+            replyingTo = null;
+            commentInput.placeholder = "Add a public comment...";
+            const btn = document.getElementById('cancelReplyBtn');
+            if (btn) btn.remove();
+        }
+
+        function loadComments() {
+            rtdb.ref(getCommentPath()).limitToLast(100).on('value', snapshot => {
+                const list = document.getElementById('commentsList');
+                const countDisp = document.getElementById('commentCount');
+                let html = '';
+                let totalCount = 0;
+
+                const data = snapshot.val();
+                if (data) {
+                    const sorted = Object.entries(data).sort((a, b) => b[1].time - a[1].time);
+                    const currentUser = auth.currentUser;
+
+                    html = sorted.map(([id, c]) => {
+                        const isOwner = currentUser && currentUser.uid === c.uid;
+                        const avatar = c.avatar || '../../images/guest_avatar.png';
+                        
+                        // Count main comment
+                        totalCount++;
+                        
+                        // Replies count
+                        let repliesHtml = '';
+                        if (c.replies) {
+                            const replies = Object.entries(c.replies).sort((a, b) => a[1].time - b[1].time);
+                            totalCount += replies.length;
+                            repliesHtml = `
+                                <div class="replies-container">
+                                    ${replies.map(([rid, r]) => {
+                                        const isROwner = currentUser && currentUser.uid === r.uid;
+                                        return `
+                                        <div class="comment-item reply-item">
+                                            <img src="${r.avatar || '../../images/guest_avatar.png'}" class="comment-avatar reply-avatar">
+                                            <div class="comment-content-main">
+                                                <div class="comment-header">
+                                                    <div class="comment-user-info">
+                                                        <h4>${r.name}</h4>
+                                                        <span class="comment-time">${timeAgo(r.time)}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="comment-text">${r.text}</div>
+                                                <div class="comment-footer" style="gap: 1rem; margin-top: 0.4rem;">
+                                                    <div class="btn-like-pill" onclick="likeComment('${id}/replies/${rid}', this)">
+                                                        <i class="fa-regular fa-thumbs-up"></i>
+                                                        <span>${r.likes || 0}</span>
+                                                    </div>
+                                                    ${isROwner ? `<span class="footer-action" style="font-size: 0.65rem; color: var(--danger); font-weight:700;" onclick="deleteComment('${id}/replies/${rid}')">Delete</span>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            `;
+                        }
+
+                        return `
+                        <div class="comment-item">
+                            <img src="${avatar}" class="comment-avatar" alt="">
+                            <div class="comment-content-main">
+                                <div class="comment-header">
+                                    <div class="comment-user-info">
+                                        <h4>${c.name}</h4>
+                                        <span class="comment-time">${timeAgo(c.time)}</span>
+                                    </div>
+                                    <div class="comment-menu-wrap">
+                                        <div class="comment-menu-btn" onclick="toggleCommentMenu('${id}')">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </div>
+                                        <div id="menu-${id}" class="comment-actions-menu">
+                                            ${isOwner ? `
+                                            <div class="action-item" onclick="editComment('${id}', '${encodeURIComponent(c.text)}')">
+                                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                                            </div>
+                                            <div class="action-item delete" onclick="deleteComment('${id}')">
+                                                <i class="fa-regular fa-trash-can"></i> Delete
+                                            </div>
+                                            ` : `
+                                            <div class="action-item" onclick="reportContent('watch', '${anilistId}/${id}', '${encodeURIComponent(c.text)}')">
+                                                <i class="fa-regular fa-flag"></i> Report
+                                            </div>
+                                            `}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="comment-text" id="text-${id}">${c.text.replace(/\n/g, '<br>')}</div>
+                                <div class="comment-footer">
+                                    <div class="btn-like-pill" onclick="likeComment('${id}', this)">
+                                        <i class="fa-regular fa-thumbs-up"></i>
+                                        <span>${c.likes || 0}</span>
+                                    </div>
+                                    <div class="btn-reply-text" onclick="setReply('${id}', '${c.name.replace(/'/g, "\\'")}')">Reply</div>
+                                </div>
+                                ${repliesHtml}
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    html = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No comments yet. Be the first to share!</div>';
+                }
+
+                list.innerHTML = html;
+                countDisp.textContent = `(${totalCount})`;
+            });
+        }
+
+        function toggleCommentMenu(id) {
+            const menu = document.getElementById(`menu-${id}`);
+            const isActive = menu.classList.contains('active');
+            document.querySelectorAll('.comment-actions-menu').forEach(m => m.classList.remove('active'));
+            if (!isActive) menu.classList.add('active');
+            
+            // Close when clicking outside
+            const closer = (e) => {
+                if (!e.target.closest('.comment-menu-wrap')) {
+                    menu.classList.remove('active');
+                    document.removeEventListener('click', closer);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closer), 10);
+        }
+
+        async function deleteComment(id) {
+            if (!confirm("Delete this comment?")) return;
+            try {
+                await rtdb.ref(`${getCommentPath()}/${id}`).remove();
+                showToast("Comment deleted");
+            } catch (e) { showToast("Error: " + e.message); }
+        }
+
+        async function editComment(id, oldText) {
+            const newText = prompt("Edit comment:", decodeURIComponent(oldText));
+            if (!newText || newText.trim() === "") return;
+            try {
+                await rtdb.ref(`${getCommentPath()}/${id}`).update({ text: newText.trim() });
+                showToast("Comment updated");
+            } catch (e) { showToast("Error: " + e.message); }
+        }
+
+        async function reportContent(type, path, body) {
+            const user = auth.currentUser;
+            try {
+                const reportData = {
+                    type: type,
+                    path: path,
+                    body: decodeURIComponent(body),
+                    reporterUid: user ? user.uid : 'Guest',
+                    reporterName: user ? user.displayName : 'Guest',
+                    time: Date.now(),
+                    status: 'pending'
+                };
+                await rtdb.ref('reports').push(reportData);
+                showToast("Reported to moderators");
+            } catch (e) { showToast("Error reporting"); }
+        }
+
+        function likeComment(id, btn) {
+            if (!auth.currentUser) { openLoginModal(); return; }
+            if (btn.classList.contains('active')) return;
+
+            btn.classList.add('active');
+            const ref = rtdb.ref(`${getCommentPath()}/${id}/likes`);
+            ref.transaction(c => (c || 0) + 1);
+            
+            const span = btn.querySelector('span');
+            span.textContent = parseInt(span.textContent) + 1;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 2500);
+        }
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = Math.floor(seconds / 31536000);
+            if (interval > 1) return interval + "y ago";
+            interval = Math.floor(seconds / 2592000);
+            if (interval > 1) return interval + "mo ago";
+            interval = Math.floor(seconds / 86400);
+            if (interval > 1) return interval + "d ago";
+            interval = Math.floor(seconds / 3600);
+            if (interval > 1) return interval + "h ago";
+            interval = Math.floor(seconds / 60);
+            if (interval > 1) return interval + "m ago";
+            return Math.floor(seconds) + "s ago";
+        }
+
+        // 10s Refresh Interval as requested
+        setInterval(loadComments, 10000);
+        // Initial load in initWatch to ensure it starts after data is ready
+
+        // New Global Variable for Episode Data
+        let currentEpData = null;
+
+        async function getDbAnimeIds() {
+            const cacheKey = 'anime_db_ids';
+            const cacheTimeKey = 'anime_db_ids_time';
+            const cachedIds = localStorage.getItem(cacheKey);
+            const cachedTime = localStorage.getItem(cacheTimeKey);
+            const now = Date.now();
+            if (cachedIds && cachedTime && (now - cachedTime < 24 * 60 * 60 * 1000)) return JSON.parse(cachedIds);
+            try {
+                const s = await db.collection('anime_series').get();
+                const m = await db.collection('anime_movies').get();
+                const ids = [...s.docs.map(d => parseInt(d.id)), ...m.docs.map(d => parseInt(d.id))];
+                localStorage.setItem(cacheKey, JSON.stringify(ids));
+                localStorage.setItem(cacheTimeKey, now.toString());
+                return ids;
+            } catch (e) { return JSON.parse(cachedIds || '[]'); }
+        }
+
+        const query = `
+        query ($id: Int) {
+            Media(id: $id, type: ANIME) {
+                id
+                title { romaji english }
+                bannerImage
+                coverImage { extraLarge large }
+                episodes
+                format
+                seasonYear
+                genres
+                nextAiringEpisode { episode }
+                streamingEpisodes { title thumbnail url }
+                recommendations(sort: RATING_DESC, perPage: 6) {
+                    nodes {
+                        mediaRecommendation {
+                            id title { romaji english } coverImage { large } episodes format
+                        }
+                    }
+                }
+            }
+        }`;
+
+        let currentAnime = null;
+
+        // Fetch Current Episode Data from Firestore
+        async function fetchEpisodeData() {
+            const epDocId = `episode_${String(currentEp).padStart(4, '0')}`;
+            try {
+                let snap = await db.collection('anime_series').doc(anilistId).collection('episodes').doc(epDocId).get();
+                if (!snap.exists) {
+                    snap = await db.collection('anime_movies').doc(anilistId).collection('episodes').doc(epDocId).get();
+                }
+                if (snap.exists) {
+                    currentEpData = snap.data();
+                }
+            } catch (e) {
+                console.error("Error fetching episode data", e);
+            }
+        }
+
+        async function initWatch() {
+            const dbIds = await getDbAnimeIds();
+            if (!dbIds.includes(parseInt(anilistId))) {
+                showToast("Anime not available in database!");
+                setTimeout(() => window.location.href = '../../home.html', 1500);
+                return;
+            }
+
+            // Fetch Firebase data in the background
+            fetchEpisodeData();
+            loadComments();
+
+            const cacheKey = `anime_details_${anilistId}`;
+            const cacheTimeKey = `anime_details_${anilistId}_time`;
+            const cachedData = localStorage.getItem(cacheKey);
+            const cachedTime = localStorage.getItem(cacheTimeKey);
+            const now = Date.now();
+
+            if (cachedData && cachedTime && (now - cachedTime < 24 * 60 * 60 * 1000)) {
+                renderWatchUI(JSON.parse(cachedData));
+                return;
+            }
+
+            fetch('https://graphql.anilist.co', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ query, variables: { id: parseInt(anilistId) } })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const anime = data.data.Media;
+                    if (!anime) return;
+                    localStorage.setItem(cacheKey, JSON.stringify(anime));
+                    localStorage.setItem(cacheTimeKey, now.toString());
+                    renderWatchUI(anime);
+                })
+                .catch(err => console.error(err));
+        }
+
+        function renderWatchUI(anime) {
+            currentAnime = anime;
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            const title = anime.title.english || anime.title.romaji;
+            document.getElementById('animeTitle').textContent = title;
+            document.getElementById('animeTitle').href = `details.html?id=${anilistId}`;
+            document.getElementById('backBtn').href = `details.html?id=${anilistId}`;
+
+            document.getElementById('epBadge').textContent = `EP ${currentEp < 10 ? '0' + currentEp : currentEp}`;
+            document.getElementById('metaYear').textContent = anime.seasonYear || anime.format || '';
+            document.getElementById('metaGenre').textContent = anime.genres[0] || '';
+
+            document.getElementById('playerArea').style.backgroundImage = `url('${anime.bannerImage || anime.coverImage.extraLarge}')`;
+
+            setupEpisodes(anime);
+            setupRecs(anime);
+        }
+
+        function setupEpisodes(anime) {
+            const epGrid = document.getElementById('epGrid');
+            const epTabs = document.getElementById('epTabs');
+            const chunkSize = 50;
+            const title = anime.title.english || anime.title.romaji;
+
+            const epDataMap = {};
+            if (anime.streamingEpisodes) {
+                anime.streamingEpisodes.forEach(ep => {
+                    const match = ep.title.match(/Episode\s+(\d+)/i);
+                    if (match) epDataMap[parseInt(match[1])] = ep;
+                });
+            }
+
+            let totalEpsCount = anime.episodes;
+            if (!totalEpsCount && anime.nextAiringEpisode) {
+                totalEpsCount = anime.nextAiringEpisode.episode - 1;
+            } else if (!totalEpsCount) {
+                totalEpsCount = Math.max(12, ...Object.keys(epDataMap).map(Number));
+            }
+
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentEp > 1) prevBtn.href = `watch.html?id=${anilistId}&ep=${currentEp - 1}`;
+            else prevBtn.classList.add('disabled');
+            if (currentEp < totalEpsCount) nextBtn.href = `watch.html?id=${anilistId}&ep=${currentEp + 1}`;
+            else nextBtn.classList.add('disabled');
+
+            const renderChunk = (startIdx) => {
+                epGrid.innerHTML = '';
+                const endIdx = Math.min(startIdx + chunkSize, totalEpsCount);
+                const displayLimit = 5;
+
+                for (let i = startIdx + 1; i <= endIdx; i++) {
+                    const streamData = epDataMap[i];
+                    const item = document.createElement('a');
+                    item.href = `watch.html?id=${anilistId}&ep=${i}`;
+                    item.className = `ep-item ${i === currentEp ? 'active' : ''}`;
+                    if (i > startIdx + displayLimit) {
+                        item.style.display = 'none';
+                        item.classList.add('hidden-ep');
+                    }
+                    const thumb = streamData ? streamData.thumbnail : (anime.bannerImage || anime.coverImage.extraLarge);
+                    const epTitleStr = streamData ? streamData.title : `Episode ${i}`;
+                    item.innerHTML = `
+                        <div class="ep-thumbnail">
+                            <img src="${thumb}" alt="Episode ${i}" onerror="this.src='${anime.coverImage.extraLarge}'">
+                            <div class="ep-play-overlay"><i class="fa-solid fa-play"></i></div>
+                        </div>
+                        <div class="ep-details">
+                            <div class="ep-name">${epTitleStr}</div>
+                            <div class="ep-meta">Official Stream</div>
+                        </div>
+                    `;
+                    epGrid.appendChild(item);
+                }
+
+                if (endIdx - startIdx > displayLimit) {
+                    const moreBtn = document.createElement('button');
+                    moreBtn.className = 'view-more-ep-btn';
+                    moreBtn.innerHTML = `View More <i class="fa-solid fa-chevron-down"></i>`;
+                    moreBtn.onclick = () => {
+                        epGrid.querySelectorAll('.hidden-ep').forEach(el => el.style.display = 'flex');
+                        moreBtn.remove();
+                    };
+                    epGrid.appendChild(moreBtn);
+                }
+            };
+
+            const numChunks = Math.ceil(totalEpsCount / chunkSize);
+            if (numChunks > 1) {
+                epTabs.innerHTML = '';
+                for (let i = 0; i < numChunks; i++) {
+                    const start = i * chunkSize + 1;
+                    const end = Math.min((i + 1) * chunkSize, totalEpsCount);
+                    const tab = document.createElement('div');
+                    tab.className = `ep-tab ${currentEp >= start && currentEp <= end ? 'active' : ''}`;
+                    tab.textContent = `EPS: ${start < 10 ? '0' + start : start}-${end < 10 ? '0' + end : end}`;
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.ep-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        renderChunk(i * chunkSize);
+                    });
+                    epTabs.appendChild(tab);
+                    if (currentEp >= start && currentEp <= end) renderChunk(i * chunkSize);
+                }
+            } else {
+                epTabs.style.display = 'none';
+                renderChunk(0);
+            }
+
+            // Save to Continue Watching
+            let cwList = JSON.parse(localStorage.getItem('continueWatching') || '[]');
+            cwList = cwList.filter(a => a.id !== anime.id);
+            cwList.unshift({ id: anime.id, title: title, img: anime.coverImage.extraLarge, ep: currentEp });
+            if (cwList.length > 10) cwList.pop();
+            localStorage.setItem('continueWatching', JSON.stringify(cwList));
+        }
+
+        async function fetchAniListDataBatch(ids) {
+            const batchQuery = `query($ids: [Int]) { Page(perPage: 10) { media(id_in: $ids) { id title { romaji english } coverImage { large } episodes format } } }`;
+            try {
+                const res = await fetch('https://graphql.anilist.co', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: batchQuery, variables: { ids } })
+                });
+                const data = await res.json();
+                return data.data.Page.media || [];
+            } catch (e) { return []; }
+        }
+
+        async function setupRecs(anime) {
+            const grid = document.getElementById('relatedGrid');
+            const dbIds = await getDbAnimeIds();
+            const dbIdSet = new Set(dbIds);
+            
+            // 1. Get recommendations from Anilist that ARE in our DB
+            let list = [];
+            if (anime.recommendations && anime.recommendations.nodes) {
+                list = anime.recommendations.nodes
+                    .map(n => n.mediaRecommendation)
+                    .filter(rec => rec && dbIdSet.has(rec.id));
+            }
+
+            // 2. If not enough (less than 6), fill with random ones from DB
+            if (list.length < 6) {
+                const randomFill = dbIds
+                    .filter(id => id !== parseInt(anilistId) && !list.some(r => r.id === id))
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 6 - list.length);
+                
+                if (randomFill.length > 0) {
+                    const fillData = await fetchAniListDataBatch(randomFill);
+                    list = [...list, ...fillData];
+                }
+            }
+
+            const finalList = list.slice(0, 6);
+            if (finalList.length === 0) {
+                document.querySelector('.rec-section').style.display = 'none';
+                return;
+            }
+
+            grid.innerHTML = finalList.map(rec => `
+                <a href="watch.html?id=${rec.id}&ep=1" class="rec-card">
+                    <div class="rec-img-box">
+                        <span class="rec-tag-hd">${rec.format || 'TV'}</span>
+                        <div class="ep-tag"><span class="cc-icon">cc</span> ${rec.episodes || '?'}</div>
+                        <img src="${rec.coverImage.large}" alt="">
+                    </div>
+                    <div class="rec-title">${rec.title.english || rec.title.romaji}</div>
+                </a>`).join('');
+        }
+
+        initWatch();
+
+        // Hybrid Player Logic Integration
+        async function startPlayer() {
+            const playerArea = document.getElementById('playerArea');
+            const totalEps = currentAnime ? (currentAnime.episodes || 0) : 0;
+            const isLong = (currentEp >= 100) || (totalEps >= 100);
+
+            // Inject the player structure dynamically
+            playerArea.innerHTML = `
+                <div id="processing-screen" style="display:none; width:100%; height:100%; background:#0a0b10; flex-direction:column; align-items:center; justify-content:center; position:absolute; top:0; left:0; z-index:10; border-radius:inherit;">
+                    <lottie-player src="" background="transparent" speed="1" style="width: 180px; height: 180px;" loop autoplay></lottie-player>
+                    <h3 style="color:#fff; margin-top:0.5rem; font-size:1.1rem; font-weight:700; text-align:center;"></h3>
+                    <p style="color:var(--text-muted); font-size:0.85rem; font-weight:500; text-align:center; margin-top:0.25rem; opacity:0.8;"></p>
+                </div>
+                <iframe id="iframe-embed" allow="autoplay; fullscreen; geolocation; display-capture; picture-in-picture" frameborder="0" style="display:none; width:100%; height:100%;"></iframe>
+            `;
+
+            const iframe = document.getElementById('iframe-embed');
+            const processingScreen = document.getElementById('processing-screen');
+            const lottiePlayer = processingScreen.querySelector('lottie-player');
+            const titleText = processingScreen.querySelector('h3');
+            const msgText = processingScreen.querySelector('p');
+
+            if (currentEpData && currentEpData.links && currentEpData.links.rpm_video_id) {
+                // Video Exists - Play it
+                const videoId = currentEpData.links.rpm_video_id;
+                const base = isLong ? 'ans.rpmvip.com' : 'anm.rpmvip.com';
+                iframe.src = `https://${base}/#${videoId}`;
+                iframe.style.display = 'block';
+            } else {
+                // Video Missing - Show Processing Lottie Animations
+                const status = currentEpData ? currentEpData.status : 'pending';
+                iframe.style.display = 'none';
+                processingScreen.style.display = 'flex';
+
+                if (status === 'failed_forever') {
+                    lottiePlayer.setAttribute('src', 'json/404 error page with cat.json');
+                    titleText.innerText = 'Video Unavailable';
+                    msgText.innerText = 'Sorry, this video is not available.';
+                } else if (status === 'waiting_for_upload' || status === 'waiting_for_upload_long') {
+                    lottiePlayer.setAttribute('src', 'json/cat playing animation.json');
+                    titleText.innerText = 'Waiting for Upload';
+                    msgText.innerText = 'Our bots are preparing to upload this episode.';
+                } else if (status === 'processing' || status === 'encoding') {
+                    lottiePlayer.setAttribute('src', 'json/space boy developer.json');
+                    titleText.innerText = 'Video is Processing...';
+                    msgText.innerText = 'Our bots are uploading this episode. Please wait.';
+                } else {
+                    lottiePlayer.setAttribute('src', 'json/sandy loading.json');
+                    titleText.innerText = 'Pending...';
+                    msgText.innerText = 'Please wait, checking data.';
+                }
+            }
+        }
+
+        function addComment() {
+            const input = document.getElementById('commentInput');
+            const list = document.getElementById('commentsList');
+            const count = document.getElementById('commentCount');
+            if (!input.value.trim()) return;
+
+            const newItem = document.createElement('div');
+            newItem.className = 'comment-item';
+            newItem.style.animation = 'fadeIn 0.5s ease forwards';
+            newItem.innerHTML = `
+                <img src="https://i.pravatar.cc/150?u=me" class="user-avatar" alt="">
+                <div class="comment-info">
+                    <div class="comment-user">You <span class="comment-time">· just now</span></div>
+                    <div class="comment-text">${input.value.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+            list.prepend(newItem);
+            input.value = '';
+            const val = count.textContent.match(/\d+/);
+            if (val) count.textContent = `(${parseInt(val[0]) + 1})`;
+        }
+
+        const styleTag = document.createElement('style');
+        styleTag.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(styleTag);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Subscription - AniShift Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0a0b10;
+            --bg-secondary: #14151e;
+            --accent-color: #1e90ff;
+            --premium-color: #ffcc00;
+            --text-light: #ffffff;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            background-color: #000;
+            font-size: clamp(14px, 4.2vw, 18px);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            width: 100%;
+            margin: 0;
+            min-height: 100dvh;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 5rem;
+        }
+
+        /* Nav Overlay */
+        .nav-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.25rem;
+            padding-top: calc(1.25rem + env(safe-area-inset-top));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .nav-btn:active { transform: scale(0.9); }
+
+        /* Hero */
+        .premium-hero {
+            height: 18rem;
+            background: linear-gradient(to bottom, rgba(30, 144, 255, 0.2), var(--bg-main)), 
+                        url('https://wallpapers.com/images/featured/anime-scenery-background-5v0p9kvy2p3tqy0e.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 2rem;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .premium-badge {
+            background: var(--premium-color);
+            color: #000;
+            font-weight: 900;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+            animation: float 3s infinite;
+        }
+
+        .premium-title {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.02rem;
+            line-height: 1.1;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Content */
+        .plans-container {
+            padding: 2.5rem 1.25rem;
+        }
+
+        .section-h {
+            font-size: 1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            margin-bottom: 1.8rem;
+            color: #fff;
+        }
+
+        .section-h::before {
+            content: '';
+            width: 0.25rem;
+            height: 1.25rem;
+            background: var(--premium-color);
+            border-radius: 0.2rem;
+        }
+
+        /* Plan Cards */
+        .plan-card {
+            background: #11121a;
+            border-radius: 1.25rem;
+            padding: 1.8rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .plan-card:nth-child(2) { animation-delay: 0.1s; }
+        .plan-card:nth-child(3) { animation-delay: 0.2s; }
+
+        .plan-card.active {
+            border-color: var(--premium-color);
+            background: #181924;
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .plan-card.active::after {
+            content: 'BEST VALUE';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--premium-color);
+            color: #000;
+            font-size: 0.65rem;
+            padding: 0.32rem 0.9rem;
+            font-weight: 900;
+            border-bottom-left-radius: 0.8rem;
+            letter-spacing: 0.02rem;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-name {
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: -0.01rem;
+        }
+
+        .plan-price {
+            text-align: right;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .plan-price span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: -0.1rem;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 2rem;
+            padding-left: 0.2rem;
+        }
+
+        .plan-features li {
+            font-size: 0.94rem;
+            color: #d1d5db;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .plan-features i {
+            color: #4CAF50;
+            font-size: 1rem;
+            filter: drop-shadow(0 0 5px rgba(76, 175, 80, 0.3));
+        }
+
+        .pay-btn {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 3rem;
+            border: none;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pay-btn.premium {
+            background: var(--premium-color);
+            color: #000;
+            border: none;
+            box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+        }
+
+        .pay-btn:active { transform: scale(0.96); }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="nav-overlay">
+        <a href="../../home.html#profile" class="nav-btn"><i class="fa-solid fa-chevron-left"></i></a>
+    </div>
+
+    <div class="premium-hero">
+        <span class="premium-badge">AniShift Go</span>
+        <h1 class="premium-title">Elevate Your<br>Anime World</h1>
+        <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-top: 0.6rem; font-weight: 500;">
+            Ad-free streaming, offline downloads and more.
+        </p>
+    </div>
+
+    <div class="plans-container">
+        <h2 class="section-h">Choose Your Plan</h2>
+
+        <div class="plan-card">
+            <div class="plan-header">
+                <div class="plan-name">Monthly PRO</div>
+                <div class="plan-price">$4.99<span>Per month</span></div>
+            </div>
+            <ul class="plan-features">
+                <li><i class="fa-solid fa-circle-check"></i> No Ads (Simulcast)</li>
+                <li><i class="fa-solid fa-circle-check"></i> 1080p Crystal Clear</li>
+                <li><i class="fa-solid fa-circle-check"></i> 1 Active Device</li>
+            </ul>
+            <button class="pay-btn" onclick="alert('Proceeding to secure payment...')">Subscribe Now</button>
+        </div>
+
+        <div class="plan-card active">
+            <div class="plan-header">
+                <div class="plan-name">Ultimate Yearly</div>
+                <div class="plan-price">$39.99<span>Billed annually</span></div>
+            </div>
+            <ul class="plan-features">
+                <li><i class="fa-solid fa-circle-check"></i> Everything in PRO</li>
+                <li><i class="fa-solid fa-circle-check"></i> 4 Concurrent Streams</li>
+                <li><i class="fa-solid fa-circle-check"></i> Premium Profile Badges</li>
+            </ul>
+            <button class="pay-btn premium" onclick="alert('Proceeding to secure payment...')">Claim Offer Now</button>
+        </div>
+    </div>
+</body>
+
+</html>

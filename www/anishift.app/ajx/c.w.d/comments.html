@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Comments - AniShift Community</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a0b10;
+            --bg-secondary: #11121a;
+            --accent-color: #1e90ff;
+            --text-light: #ffffff;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            background-color: #000;
+            font-size: clamp(14px, 4.2vw, 18px);
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            width: 100%;
+            margin: 0 auto;
+            min-height: 100dvh;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 11, 16, 0.82);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            padding: 1rem 1.25rem;
+            padding-top: calc(1rem + env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: #fff;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .container {
+            width: 100%;
+            padding: 1.25rem;
+        }
+
+        /* Post Card UI matching Watch/Home */
+        .post-card {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .post-sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 2.8rem;
+        }
+
+        .post-avatar {
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.05);
+            background: #252630;
+        }
+
+        .post-line {
+            flex: 1;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+            margin-top: 0.5rem;
+        }
+
+        .post-content {
+            flex: 1;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .post-user-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.4rem;
+        }
+
+        .meta-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .meta-info span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .post-body {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e5e7eb;
+            margin-bottom: 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .post-media {
+            width: 100%;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Comments UI matching Watch */
+        .comments-header {
+            font-size: 1rem;
+            font-weight: 800;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .comment-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .comment-main {
+            flex: 1;
+            position: relative;
+        }
+
+        .comment-box {
+            background: #1c1d24;
+            padding: 0.75rem 1rem;
+            border-radius: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .comment-user {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.15rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comment-text {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .comment-footer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.4rem 0.5rem 0;
+        }
+
+        .footer-action {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .footer-action:hover { color: var(--accent-color); }
+        .footer-action.time { cursor: default; font-weight: 500; pointer-events: none; }
+
+        /* Dot Menu */
+        .menu-btn {
+            padding: 0.3rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .actions-menu {
+            position: absolute;
+            top: 2rem;
+            right: 0;
+            background: #1c1d24;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 0.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            min-width: 120px;
+        }
+
+        .actions-menu.active { display: flex; }
+
+        .action-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+        }
+
+        .action-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .action-item.delete:hover { background: rgba(255, 71, 87, 0.1); color: #ff4757; }
+
+        /* Input Bar */
+        .comment-input-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #11121a;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            z-index: 2001;
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+        }
+
+        .nav-avatar {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-input {
+            flex: 1;
+            background: #0a0b10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 1.1rem;
+            border-radius: 2rem;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .send-btn {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            width: 2.3rem;
+            height: 2.3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--accent-color);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 10px 30px rgba(30, 144, 255, 0.4);
+            z-index: 100000;
+            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .toast.active {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <button class="back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2 style="font-size: 1rem;">Post Activity</h2>
+    </header>
+
+    <div class="container">
+        <div id="mainPost">
+            <!-- Main post content -->
+        </div>
+
+        <h3 class="comments-header">Comments (<span id="commentCount">0</span>)</h3>
+        
+        <div id="commentsList">
+            <!-- Comments content -->
+        </div>
+    </div>
+
+    <div class="comment-input-bar">
+        <img id="currentUserAvatar" src="../../images/guest_avatar.png" class="nav-avatar">
+        <input type="text" id="commentInput" class="comment-input" placeholder="Post a reply...">
+        <button id="sendBtn" class="send-btn" onclick="postComment()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+
+    <!-- Toast Message -->
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toastMsg"></span>
+    </div>
+
+    <script>
+        // FIREBASE CONFIG (SAME AS HOME)
+        const dbConfig = {
+            apiKey: "AIzaSyCMpcM6vnlZF_Vbr4FHOJiRph0EsCmLHuQ",
+            authDomain: "anizero-b135b.firebaseapp.com",
+            databaseURL: "https://anizero-b135b-default-rtdb.firebaseio.com",
+            projectId: "anizero-b135b",
+            storageBucket: "anizero-b135b.firebasestorage.app",
+            messagingSenderId: "301617908781",
+            appId: "1:301617908781:web:0662624b66a55b239dfca4"
+        };
+        const authConfig = {
+            apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
+            authDomain: "anishift-5d14b.firebaseapp.com",
+            databaseURL: "https://anishift-5d14b-default-rtdb.firebaseio.com",
+            projectId: "anishift-5d14b",
+            storageBucket: "anishift-5d14b.firebasestorage.app",
+            messagingSenderId: "390267133940",
+            appId: "1:390267133940:web:a735ebcab0c60295bc23a1"
+        };
+
+        const dbApp = firebase.initializeApp(dbConfig, "dbApp");
+        const authApp = firebase.initializeApp(authConfig);
+        const rtdb = dbApp.database();
+        const auth = authApp.auth();
+
+        let replyingTo = null; // { id, name }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('currentUserAvatar').src = user.photoURL || '../../images/guest_avatar.png';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            postId = new URLSearchParams(window.location.search).get('id');
+            if (!postId) {
+                showToast("Invalid post ID.");
+                setTimeout(() => history.back(), 1500);
+                return;
+            }
+            loadPostContent();
+            loadComments();
+        });
+
+        function loadPostContent() {
+            rtdb.ref(`community_posts/${postId}`).on('value', snap => {
+                const p = snap.val();
+                if (!p) return;
+
+                const handle = (p.authorName || 'user').toLowerCase().replace(/\s+/g, '');
+                let avatar = p.authorAvatar || `https://i.pravatar.cc/150?u=${handle}`;
+                if (p.authorName === 'AniShift Official') avatar = '../../images/admin_icon.png';
+
+                const mainPost = document.getElementById('mainPost');
+                mainPost.innerHTML = `
+                <div class="post-card">
+                    <div class="post-sidebar">
+                        <img src="${avatar}" class="post-avatar">
+                        <div class="post-line"></div>
+                    </div>
+                    <div class="post-content">
+                        <div class="post-user-meta">
+                            <div class="meta-info">
+                                <h4>${p.authorName}</h4>
+                                <span>@${handle} • ${timeAgo(p.timestamp)}</span>
+                            </div>
+                        </div>
+                        <div class="post-body">${p.body}</div>
+                        ${p.image ? `<img src="${p.image}" class="post-media">` : ''}
+                    </div>
+                </div>
+                `;
+            });
+        }
+
+        function loadComments() {
+            rtdb.ref(`community_posts/${postId}/comments`).on('value', snap => {
+                const list = document.getElementById('commentsList');
+                const countDisp = document.getElementById('commentCount');
+                let html = '';
+                let totalCount = 0;
+
+                const data = snap.val();
+                if (data) {
+                    const entries = Object.entries(data).sort((a,b) => b[1].time - a[1].time);
+                    const currentUser = auth.currentUser;
+
+                    html = entries.map(([id, c]) => {
+                        const isOwner = currentUser && currentUser.uid === c.uid;
+                        const avatar = c.avatar || '../../images/guest_avatar.png';
+                        totalCount++;
+
+                        let repliesHtml = '';
+                        if (c.replies) {
+                            const replies = Object.entries(c.replies).sort((a,b) => a[1].time - b[1].time);
+                            totalCount += replies.length;
+                            repliesHtml = `
+                                <div class="replies-list" style="margin-left: 2rem; border-left: 2px solid rgba(255,255,255,0.05); padding-left: 1rem; margin-top: 1rem;">
+                                    ${replies.map(([rid, r]) => {
+                                        const isROwner = currentUser && currentUser.uid === r.uid;
+                                        return `
+                                        <div class="comment-item" style="margin-bottom: 0.75rem;">
+                                            <img src="${r.avatar || '../../images/guest_avatar.png'}" class="comment-avatar" style="width: 1.8rem; height: 1.8rem;">
+                                            <div class="comment-main">
+                                                <div class="comment-box" style="padding: 0.5rem 0.75rem;">
+                                                    <div class="comment-user" style="font-size: 0.75rem;">${r.name}</div>
+                                                    <div class="comment-text" style="font-size: 0.8rem;">${r.text}</div>
+                                                </div>
+                                                <div class="comment-footer">
+                                                    <span class="footer-action time" style="font-size: 0.65rem;">${timeAgo(r.time)}</span>
+                                                    ${isROwner ? `<span class="footer-action" style="color: var(--danger);" onclick="deleteComment('${id}/replies/${rid}')">Delete</span>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            `;
+                        }
+
+                        return `
+                        <div class="comment-item">
+                            <img src="${avatar}" class="comment-avatar">
+                            <div class="comment-main">
+                                <div class="comment-box">
+                                    <div class="comment-user">
+                                        <span>${c.name}</span>
+                                        <div class="menu-btn" onclick="toggleMenu('${id}')">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </div>
+                                        <div id="menu-${id}" class="actions-menu">
+                                            ${isOwner ? `
+                                            <div class="action-item" onclick="editComment('${id}', '${encodeURIComponent(c.text)}')">
+                                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                                            </div>
+                                            <div class="action-item delete" onclick="deleteComment('${id}')">
+                                                <i class="fa-regular fa-trash-can"></i> Delete
+                                            </div>
+                                            ` : `
+                                            <div class="action-item" onclick="reportContent('post', '${id}', '${encodeURIComponent(c.text)}')">
+                                                <i class="fa-regular fa-flag"></i> Report
+                                            </div>
+                                            `}
+                                        </div>
+                                    </div>
+                                    <div class="comment-text">${c.text.replace(/\n/g, '<br>')}</div>
+                                </div>
+                                <div class="comment-footer">
+                                    <span class="footer-action time">${timeAgo(c.time)}</span>
+                                    <span class="footer-action" onclick="showToast('Liked!')">Like</span>
+                                    <span class="footer-action" onclick="setReply('${id}', '${c.name.replace(/'/g, "\\'")}')">Reply</span>
+                                </div>
+                                ${repliesHtml}
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    html = '<div style="padding: 3rem; text-align: center; color: var(--text-muted); opacity: 0.5;">No comments here yet.<br>Start the conversation!</div>';
+                }
+
+                list.innerHTML = html;
+                countDisp.textContent = totalCount;
+            });
+        }
+
+        async function postComment() {
+            const user = auth.currentUser;
+            if (!user) {
+                showToast("Please login to comment.");
+                return;
+            }
+
+            const input = document.getElementById('commentInput');
+            const btn = document.getElementById('sendBtn');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            btn.disabled = true;
+            try {
+                const commentData = {
+                    uid: user.uid,
+                    name: user.displayName || 'User',
+                    avatar: user.photoURL || '../../images/guest_avatar.png',
+                    text: text,
+                    time: Date.now()
+                };
+
+                const path = replyingTo ? `community_posts/${postId}/comments/${replyingTo.id}/replies` : `community_posts/${postId}/comments`;
+                await rtdb.ref(path).push(commentData);
+                
+                await rtdb.ref(`community_posts/${postId}/commentsCount`).transaction(c => (c || 0) + 1);
+                input.value = '';
+                cancelReply();
+                showToast(replyingTo ? 'Reply posted!' : 'Comment posted!');
+            } catch (e) {
+                showToast("Error: " + e.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function setReply(id, name) {
+            replyingTo = { id, name };
+            const input = document.getElementById('commentInput');
+            input.placeholder = `Replying to ${name}...`;
+            input.focus();
+            
+            if (!document.getElementById('cancelReplyBtn')) {
+                const cancelBtn = document.createElement('span');
+                cancelBtn.id = 'cancelReplyBtn';
+                cancelBtn.style.color = '#ff4757';
+                cancelBtn.style.fontSize = '0.7rem';
+                cancelBtn.style.fontWeight = '700';
+                cancelBtn.style.cursor = 'pointer';
+                cancelBtn.style.marginLeft = '10px';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.onclick = cancelReply;
+                input.parentElement.appendChild(cancelBtn);
+            }
+        }
+
+        function cancelReply() {
+            replyingTo = null;
+            const input = document.getElementById('commentInput');
+            input.placeholder = "Post a reply...";
+            const btn = document.getElementById('cancelReplyBtn');
+            if (btn) btn.remove();
+        }
+
+        async function reportContent(type, id, body) {
+            const user = auth.currentUser;
+            try {
+                const reportData = {
+                    type: type,
+                    postId: postId,
+                    targetCommentId: id,
+                    body: decodeURIComponent(body),
+                    reporterUid: user ? user.uid : 'Guest',
+                    reporterName: user ? user.displayName : 'Guest',
+                    time: Date.now(),
+                    status: 'pending'
+                };
+                await rtdb.ref('reports').push(reportData);
+                showToast("Reported to moderators");
+            } catch (e) { showToast("Error reporting"); }
+        }
+
+        function toggleMenu(id) {
+            const menu = document.getElementById(`menu-${id}`);
+            const isActive = menu.classList.contains('active');
+            document.querySelectorAll('.actions-menu').forEach(m => m.classList.remove('active'));
+            if (!isActive) menu.classList.add('active');
+            
+            const closer = (e) => {
+                if (!e.target.closest('.menu-btn')) {
+                    menu.classList.remove('active');
+                    document.removeEventListener('click', closer);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closer), 10);
+        }
+
+        async function deleteComment(id) {
+            if (!confirm("Delete this comment?")) return;
+            try {
+                await rtdb.ref(`community_posts/${postId}/comments/${id}`).remove();
+                await rtdb.ref(`community_posts/${postId}/commentsCount`).transaction(c => (c || 1) - 1);
+                showToast('Comment deleted');
+            } catch (e) { showToast(e.message); }
+        }
+
+        async function editComment(id, old) {
+            const txt = prompt("Edit comment:", decodeURIComponent(old));
+            if (!txt || txt.trim() === "") return;
+            try {
+                await rtdb.ref(`community_posts/${postId}/comments/${id}`).update({ text: txt.trim() });
+                showToast('Comment updated');
+            } catch (e) { showToast(e.message); }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 2500);
+        }
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            let interval = Math.floor(seconds / 31536000);
+            if (interval > 1) return interval + "y ago";
+            interval = Math.floor(seconds / 2592000);
+            if (interval > 1) return interval + "mo ago";
+            interval = Math.floor(seconds / 86400);
+            if (interval > 1) return interval + "d ago";
+            interval = Math.floor(seconds / 3600);
+            if (interval > 1) return interval + "h ago";
+            interval = Math.floor(seconds / 60);
+            if (interval > 1) return interval + "m ago";
+            return Math.floor(seconds) + "s ago";
+        }
+
+        document.getElementById('commentInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') postComment();
+        });
+    </script>
+</body>
+
+</html>

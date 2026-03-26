@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AniShift - Ultimate Anime Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+
+    <meta name="monetag" content="a6561bd5e8e17a7964ebf6b31defb858">
+    <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a0b10;
+            --bg-glass: rgba(17, 18, 26, 0.85);
+            --accent-color: #1e90ff;
+            --text-light: #ffffff;
+            --text-muted: #9499a1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html,
+        body {
+            background-color: #000;
+            color: #fff;
+            height: 100dvh !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
+        /* Splash Screen */
+
+        /* Splash Screen */
+        #splash {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        #splash h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+        }
+
+        #splash span {
+            color: var(--accent-color);
+            text-shadow: 0 0 30px rgba(30, 144, 255, 0.5);
+        }
+
+        .splash-loader {
+            width: 50px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-loader::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            background: var(--accent-color);
+            animation: loaderMove 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loaderMove {
+            0% {
+                left: -50%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+
+        /* Subtle Poster Grid BG */
+        .poster-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            opacity: 0.2;
+            filter: blur(8px) grayscale(0.2);
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+            background: #000;
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            align-self: start;
+            width: 100%;
+        }
+
+        .col.up {
+            animation: scrollUp 150s linear infinite;
+        }
+
+        .col.down {
+            animation: scrollDown 150s linear infinite;
+        }
+
+        .col img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+        }
+
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        @keyframes scrollDown {
+            0% {
+                transform: translateY(-50%);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        .onboarding-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, #000000aa 0%, #000000 70%, #000000 100%);
+            z-index: 2;
+        }
+
+        /* Onboarding Body */
+        .onboarding-container {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2.5rem 2rem;
+            padding-top: calc(2.5rem + env(safe-area-inset-top));
+            padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+            overflow: hidden;
+        }
+
+        .header-logo {
+            margin-bottom: 2rem;
+            z-index: 100;
+        }
+
+        .header-logo h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .header-logo h1 span {
+            color: var(--accent-color);
+        }
+
+        .slides-wrapper {
+            flex: 1;
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            pointer-events: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        .slide-img-box {
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .slide-img-box::after {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: var(--accent-color);
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .slide-img-box img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 2rem;
+            object-fit: cover;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            animation: float 5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .slide h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .slide p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            font-weight: 500;
+            max-width: 340px;
+        }
+
+        /* Footer Stack */
+        .footer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            margin-top: auto;
+            padding-bottom: 1.5rem;
+        }
+
+        .dots {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+
+        .dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: var(--accent-color);
+        }
+
+        .btn-next {
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 1.5rem;
+            border: none;
+            background: var(--accent-color);
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(30, 144, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .btn-next:active {
+            transform: scale(0.97);
+        }
+
+        .skip-link {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            font-weight: 700;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+    </style>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+    <!-- Splash -->
+    <div id="splash">
+        <h1>Ani<span>Shift</span></h1>
+        <div class="splash-loader"></div>
+    </div>
+
+    <!-- Animated BG -->
+    <div class="poster-bg" id="gridContainer"></div>
+    <div class="onboarding-overlay"></div>
+
+    <!-- Onboarding Container -->
+    <div class="onboarding-container">
+        <div class="header-logo">
+            <h1>Ani<span>Shift</span></h1>
+        </div>
+
+        <div class="slides-wrapper">
+            <div class="slide active" id="slide-0">
+                <div class="slide-img-box">
+                    <img src="images/slide1.png" alt="Discover">
+                </div>
+                <h2>Infinite Discoveries</h2>
+                <p>Dive into a massive library of over 10,000+ anime titles from every genre.</p>
+            </div>
+            <div class="slide" id="slide-1">
+                <div class="slide-img-box">
+                    <img src="images/slide2.png" alt="Watchlist">
+                </div>
+                <h2>Seamless Tracking</h2>
+                <p>Keep your watchlist organized and sync your progress perfectly across devices.</p>
+            </div>
+            <div class="slide" id="slide-2">
+                <div class="slide-img-box">
+                    <img src="images/slide3.png" alt="Streaming">
+                </div>
+                <h2>Ultra HD Streaming</h2>
+                <p>Experience breathtaking visual quality and lightning-fast streaming speeds.</p>
+            </div>
+            <div class="slide" id="slide-3">
+                <div class="slide-img-box">
+                    <img src="images/slide4.png" alt="Support">
+                </div>
+                <h2>අපගේ සේවාව පිළිබඳ (Our Service)</h2>
+                <p>AniShift නොමිලේ පවත්වාගෙන යාමට සහ නඩත්තු අවශ්‍යතා සඳහා වෙළඳ දැන්වීම් ඇතුළත් කිරීමට සිදුවී ඇත. එම නිසා ඔබට ඇතිවන අපහසුතාවයට අපගේ කණගාටුව ප්‍රකාශ කරමු. ඔබගේ සහයෝගයට ස්තුතියි!</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="dots">
+                <div class="dot active"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <button class="btn-next" id="nextBtn" onclick="nextSlide()">
+                NEXT
+            </button>
+            <a href="anishift.app/auth.html" class="skip-link">SKIP</a>
+        </div>
+    </div>
+
+    <script>
+        // Init Dynamic BG
+        async function fetchPosters() {
+            const query = `{ Page(perPage: 24) { media(sort: TRENDING_DESC, type: ANIME, isAdult: false) { coverImage { large } } } }`;
+            try {
+                const res = await fetch('https://graphql.anilist.co', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await res.json();
+                renderGrid(data.data.Page.media.map(m => m.coverImage.large));
+            } catch (e) {
+                renderGrid(["https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113415-bbBWj4pEFseh.jpg"]);
+            }
+        }
+
+        function renderGrid(imgs) {
+            const grid = document.getElementById('gridContainer');
+            for (let i = 0; i < 3; i++) {
+                const col = document.createElement('div');
+                col.className = 'col ' + (i % 2 === 0 ? 'up' : 'down');
+                col.innerHTML = [...imgs, ...imgs].map(src => `<img src="${src}">`).join('');
+                grid.appendChild(col);
+            }
+        }
+
+        let currentSlide = 0;
+        const totalSlides = 4;
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                currentSlide++;
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                updateUI();
+            } else {
+                window.location.href = 'anishift.app/auth.html';
+            }
+        }
+
+        function updateUI() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentSlide);
+            });
+            if (currentSlide === totalSlides - 1) {
+                document.getElementById('nextBtn').textContent = "LET'S START";
+            }
+        }
+
+        const authConfig = {
+            apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
+            authDomain: "anishift-5d14b.firebaseapp.com",
+            databaseURL: "https://anishift-5d14b-default-rtdb.firebaseio.com",
+            projectId: "anishift-5d14b",
+            storageBucket: "anishift-5d14b.firebasestorage.app",
+            messagingSenderId: "390267133940",
+            appId: "1:390267133940:web:a735ebcab0c60295bc23a1",
+            measurementId: "G-6W05176VZP"
+        };
+        firebase.initializeApp(authConfig);
+
+        window.onload = () => {
+            fetchPosters();
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    window.location.href = 'anishift.app/home.html';
+                } else {
+                    setTimeout(() => {
+                        const splash = document.getElementById('splash');
+                        if (splash) {
+                            splash.style.opacity = '0';
+                            splash.style.transform = 'scale(1.3)';
+                            setTimeout(() => splash.style.display = 'none', 800);
+                        }
+                    }, 2500);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

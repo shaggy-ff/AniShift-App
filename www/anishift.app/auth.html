@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Auth - AniShift</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #000000;
+            --bg-card: #0d0f14;
+            --accent-color: #33d1ff;
+            --text-muted: #8e9196;
+            --input-bg: #1a1d26;
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            overflow-x: hidden;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .brand-logo {
+            margin-bottom: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .brand-logo img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(51, 209, 255, 0.3));
+        }
+
+        .brand-logo h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .auth-card {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-box {
+            position: relative;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            padding: 0 1.25rem;
+            height: 65px;
+            transition: 0.3s;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--accent-color);
+            background: rgba(51, 209, 255, 0.05);
+            box-shadow: 0 0 25px rgba(51, 209, 255, 0.1);
+        }
+
+        .input-label {
+            position: absolute;
+            left: 3.5rem;
+            top: 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .input-box i.field-icon {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            width: 20px;
+        }
+
+        .input-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 1.2rem 0.8rem 0 0.8rem;
+        }
+
+        .input-box i.toggle-password {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.5rem;
+        }
+
+        .auth-extras {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0.5rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-color);
+            border-radius: 6px;
+        }
+
+        .forgot-link {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-auth {
+            width: 100%;
+            height: 65px;
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 2rem;
+            font-size: 1.1rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(51, 209, 255, 0.3);
+            margin-top: 1rem;
+        }
+
+        .btn-auth:active {
+            transform: scale(0.96);
+        }
+
+        .auth-footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .auth-footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 800;
+            margin-left: 0.3rem;
+        }
+
+        .error-msg {
+            color: #ff4757;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: -0.5rem;
+            min-height: 1.2rem;
+        }
+
+        #loader-auth {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-main);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loader-auth"><i class="fa-solid fa-spinner fa-spin"></i></div>
+
+    <div class="auth-container">
+        <div class="brand-logo">
+            <img id="dynamicLogo" src="images/logo.png" alt="AniShift">
+            <h2>Log In</h2>
+        </div>
+
+        <div class="auth-card">
+            <!-- Login View -->
+            <div id="login-view">
+                <form class="auth-form" onsubmit="event.preventDefault(); handleLogin();">
+                    <div class="input-group">
+                        <div class="input-box">
+                            <span class="input-label">Email</span>
+                            <i class="fa-regular fa-envelope field-icon"></i>
+                            <input type="email" id="login-email" value="otakumaster99@gmail.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-box">
+                            <span class="input-label">Password</span>
+                            <i class="fa-solid fa-lock field-icon"></i>
+                            <input type="password" id="login-pass" value="123456" required>
+                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('login-pass', this)"></i>
+                        </div>
+                    </div>
+                    <div class="auth-extras">
+                        <label class="remember-me">
+                            <input type="checkbox" checked> Remember Me
+                        </label>
+                        <a onclick="toggleAuth('forgot')" class="forgot-link">Forgotten Password?</a>
+                    </div>
+                    <div id="login-error" class="error-msg"></div>
+                    <button type="submit" class="btn-auth">Log In</button>
+                </form>
+
+                <div class="auth-footer">
+                    Don't have an account? <a onclick="toggleAuth('signup')">Create Account</a>
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="javascript:void(0)" onclick="continueAsGuest()" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none; font-weight: 700; opacity: 0.7;">Continue as Guest</a>
+                </div>
+            </div>
+
+            <!-- Signup View -->
+            <div id="signup-view" style="display: none;">
+                <form class="auth-form" onsubmit="event.preventDefault(); handleSignup();">
+                    <div class="input-group">
+                        <div class="input-box">
+                            <span class="input-label">Full Name</span>
+                            <i class="fa-regular fa-user field-icon"></i>
+                            <input type="text" id="signup-name" placeholder="John Doe" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-box">
+                            <span class="input-label">Email</span>
+                            <i class="fa-regular fa-envelope field-icon"></i>
+                            <input type="email" id="signup-email" placeholder="name@email.com" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-box">
+                            <span class="input-label">Password</span>
+                            <i class="fa-solid fa-lock field-icon"></i>
+                            <input type="password" id="signup-pass" placeholder="Create a strong password" required>
+                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('signup-pass', this)"></i>
+                        </div>
+                    </div>
+                    <div id="signup-error" class="error-msg"></div>
+                    <button type="submit" class="btn-auth">Create Account</button>
+                </form>
+
+                <div class="auth-footer">
+                    Already have an account? <a onclick="toggleAuth('login')">Log In</a>
+                </div>
+            </div>
+
+            <!-- Forgot Password View -->
+            <div id="forgot-view" style="display: none;">
+                <form class="auth-form" onsubmit="event.preventDefault(); handleForgotPassword();">
+                    <div class="input-group">
+                        <div class="input-box">
+                            <span class="input-label">Email</span>
+                            <i class="fa-regular fa-envelope field-icon"></i>
+                            <input type="email" id="forgot-email" placeholder="name@email.com" required>
+                        </div>
+                    </div>
+                    <div id="forgot-error" class="error-msg"></div>
+                    <div id="forgot-success" style="color: #2ed573; font-size: 0.9rem; font-weight: 700; margin-top: 1rem; display: none; text-align: center;">
+                        <i class="fa-solid fa-circle-check"></i> Reset email sent!
+                    </div>
+                    <button type="submit" id="btn-forgot" class="btn-auth">Send Reset Link</button>
+                </form>
+                <div class="auth-footer">
+                    Remembered it? <a onclick="toggleAuth('login')">Log In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
+            authDomain: "anishift-5d14b.firebaseapp.com",
+            databaseURL: "https://anishift-5d14b-default-rtdb.firebaseio.com",
+            projectId: "anishift-5d14b",
+            storageBucket: "anishift-5d14b.firebasestorage.app",
+            messagingSenderId: "390267133940",
+            appId: "1:390267133940:web:a735ebcab0c60295bc23a1",
+            measurementId: "G-6W05176VZP"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        function toggleAuth(mode) {
+            document.getElementById('login-view').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('signup-view').style.display = mode === 'signup' ? 'block' : 'none';
+            document.getElementById('forgot-view').style.display = mode === 'forgot' ? 'block' : 'none';
+            
+            // Update Title
+            const titles = { login: 'Log In', signup: 'Sign Up', forgot: 'Reset' };
+            document.querySelector('.brand-logo h2').innerText = titles[mode];
+
+            // Clear messages
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('signup-error').textContent = '';
+            document.getElementById('forgot-error').textContent = '';
+            document.getElementById('forgot-success').style.display = 'none';
+        }
+
+        function togglePasswordVisibility(id, btn) {
+            const el = document.getElementById(id);
+            if (el.type === 'password') {
+                el.type = 'text';
+                btn.className = 'fa-regular fa-eye-slash toggle-password';
+            } else {
+                el.type = 'password';
+                btn.className = 'fa-regular fa-eye toggle-password';
+            }
+        }
+
+        async function handleForgotPassword() {
+            const email = document.getElementById('forgot-email').value;
+            const error = document.getElementById('forgot-error');
+            const success = document.getElementById('forgot-success');
+            const btn = document.getElementById('btn-forgot');
+            
+            error.textContent = '';
+            success.style.display = 'none';
+            showLoader(true);
+            
+            try {
+                await auth.sendPasswordResetEmail(email);
+                success.style.display = 'block';
+                showLoader(false);
+            } catch (err) {
+                error.textContent = err.message;
+                showLoader(false);
+            }
+        }
+
+        function showLoader(show) {
+            document.getElementById('loader-auth').style.display = show ? 'flex' : 'none';
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const error = document.getElementById('login-error');
+            error.textContent = '';
+            showLoader(true);
+            try {
+                await auth.signInWithEmailAndPassword(email, pass);
+                window.location.href = 'home.html';
+            } catch (err) {
+                error.textContent = err.message;
+                showLoader(false);
+            }
+        }
+
+        async function handleSignup() {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const pass = document.getElementById('signup-pass').value;
+            const error = document.getElementById('signup-error');
+            error.textContent = '';
+            showLoader(true);
+            try {
+                const userCred = await auth.createUserWithEmailAndPassword(email, pass);
+                await userCred.user.updateProfile({ displayName: name });
+                localStorage.setItem('userData', JSON.stringify({ name, email }));
+                window.location.href = 'home.html';
+            } catch (err) {
+                error.textContent = err.message;
+                showLoader(false);
+            }
+        }
+
+        async function handleGoogleAuth() {
+            // Social Auth Disabled per UI change
+        }
+
+        // Apply generated logo
+        document.getElementById('dynamicLogo').src = 'C:/Users/MR Vinoth/.gemini/antigravity/brain/4ec030d3-b864-480b-a344-5d6dca1f336c/anishift_auth_logo_1774505958534.png';
+
+        function continueAsGuest() {
+            sessionStorage.setItem('guest_session', 'true');
+            window.location.href = 'home.html';
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) window.location.href = 'home.html';
+        });
+    </script>
+</body>
+
+</html>
