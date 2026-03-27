@@ -1,5 +1,13 @@
 {
   "appId": "com.anishift.app",
   "appName": "AniShift",
-  "webDir": "www"
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#ffffff",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
 }

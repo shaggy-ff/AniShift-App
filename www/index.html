@@ -10,8 +10,7 @@
         rel="stylesheet">
 
 
-    <meta name="monetag" content="a6561bd5e8e17a7964ebf6b31defb858">
-    <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
+
 
     <style>
         :root {
@@ -394,19 +393,12 @@
                 <h2>Ultra HD Streaming</h2>
                 <p>Experience breathtaking visual quality and lightning-fast streaming speeds.</p>
             </div>
-            <div class="slide" id="slide-3">
-                <div class="slide-img-box">
-                    <img src="images/slide4.png" alt="Support">
-                </div>
-                <h2>අපගේ සේවාව පිළිබඳ (Our Service)</h2>
-                <p>AniShift නොමිලේ පවත්වාගෙන යාමට සහ නඩත්තු අවශ්‍යතා සඳහා වෙළඳ දැන්වීම් ඇතුළත් කිරීමට සිදුවී ඇත. එම නිසා ඔබට ඇතිවන අපහසුතාවයට අපගේ කණගාටුව ප්‍රකාශ කරමු. ඔබගේ සහයෝගයට ස්තුතියි!</p>
-            </div>
+
         </div>
 
         <div class="footer">
             <div class="dots">
                 <div class="dot active"></div>
-                <div class="dot"></div>
                 <div class="dot"></div>
                 <div class="dot"></div>
             </div>
@@ -445,7 +437,7 @@
         }
 
         let currentSlide = 0;
-        const totalSlides = 4;
+        const totalSlides = 3;
 
         function nextSlide() {
             if (currentSlide < totalSlides - 1) {
@@ -454,6 +446,7 @@
                 document.getElementById(`slide-${currentSlide}`).classList.add('active');
                 updateUI();
             } else {
+                localStorage.setItem('onboarding_shown', 'true');
                 window.location.href = 'anishift.app/auth.html';
             }
         }
@@ -482,9 +475,13 @@
 
         window.onload = () => {
             fetchPosters();
+            const onboardingShown = localStorage.getItem('onboarding_shown');
+            
             firebase.auth().onAuthStateChanged(user => {
                 if (user) {
                     window.location.href = 'anishift.app/home.html';
+                } else if (onboardingShown) {
+                    window.location.href = 'anishift.app/auth.html';
                 } else {
                     setTimeout(() => {
                         const splash = document.getElementById('splash');

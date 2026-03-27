@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Support Us - AniShift</title>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #000000;
+            --accent-color: #1e90ff;
+            --text-light: #ffffff;
+            --text-muted: #9499a1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            text-align: center;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .logo-box {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-box img {
+            max-width: 280px;
+            height: auto;
+        }
+
+        .message {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.6;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-continue {
+            background: transparent;
+            color: #ffffff;
+            border: 1.2px solid #ffffff;
+            padding: 0.85rem 3rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: lowercase;
+            margin-top: 1rem;
+        }
+
+        .btn-continue:active {
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-box">
+            <img src="images/logo.png" alt="AniShift">
+        </div>
+
+        <p class="message">
+            Sorry for the interruption with the ads! 🙏 We've added a few ads just to help cover our server costs so we can keep AniShift 100% free for everyone. Thank you so much for your amazing support! 💖
+        </p>
+
+        <button class="btn-continue" onclick="continueApp()">continu app</button>
+    </div>
+
+    <script>
+        function continueApp() {
+            // Check if there is a redirect URL in params
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect');
+            if (redirect) {
+                window.location.href = redirect;
+            } else {
+                window.location.href = 'anishift.app/home.html';
+            }
+        }
+    </script>
+</body>
+</html>

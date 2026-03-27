@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="si">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniShift App Update Guide</title>
+    <style>
+        /* Modern Dark Theme CSS */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f111a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e2130;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            border-top: 4px solid #00d2ff;
+        }
+
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        h1 span {
+            color: #00d2ff;
+        }
+
+        h2 {
+            color: #00d2ff;
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        .step-box {
+            background: #262a3f;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #00d2ff;
+        }
+
+        .code-block {
+            background: #090a0f;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #4cd137;
+            position: relative;
+            margin-top: 15px;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #00d2ff;
+            color: #0f111a;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #00a8cc;
+            transform: translateY(-2px);
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 12px;
+        }
+
+        .note {
+            background: rgba(232, 65, 24, 0.1);
+            color: #e84118;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            border: 1px solid rgba(232, 65, 24, 0.3);
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1><span>AniShift</span> App Update Guide 🚀</h1>
+        <p style="text-align: center; margin-bottom: 30px; font-size: 1.1rem;">වෙබ් කෝඩ් එක වෙනස් කරාට පස්සේ, අලුත් APK
+            එකක් හදාගන්න ලේසිම පියවර 3 මෙන්න.</p>
+
+        <div class="step-box">
+            <h2>පියවර 1: කෝඩ් එක වෙනස් කරලා Save කරන්න</h2>
+            <ul>
+                <li>ඔයාගේ Editor එකේ (Antigravity/VS Code) සාමාන්‍ය විදිහටම වෙබ් කෝඩ් එක (HTML/CSS/JS) වෙනස් කරන්න.</li>
+                <li>වෙනස් කරපු හැම ෆයිල් එකක්ම අනිවාර්යයෙන්ම <strong>Save (Ctrl+S)</strong> කරන්න අමතක කරන්න එපා.</li>
+            </ul>
+        </div>
+
+        <div class="step-box">
+            <h2>පියවර 2: අලුත් කෝඩ් එක GitHub එකට යවන්න</h2>
+            <p>ඔයාගේ Editor එකේ යට තියෙන Terminal එක ඕපන් කරලා, මේ කමාන්ඩ් 3 පිළිවෙලට ගහලා Enter ඔබන්න:</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode()">Copy Commands</button>
+                <code id="git-commands">
+git add .<br><br>
+git commit -m "Update App Code"<br><br>
+git push origin main
+                </code>
+            </div>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 15px;">* (සමහරවිට main වෙනුවට master කියලා ගහන්න වෙයි,
+                ඔයා කලින් පාවිච්චි කරපු එක අනුව).</p>
+        </div>
+
+        <div class="step-box">
+            <h2>පියවර 3: අලුත් APK එක Download කරගන්න</h2>
+            <ul>
+                <li>බ්‍රවුසර් එකෙන් ඔයාගේ GitHub රෙපොසිටරි පිටුවට යන්න.</li>
+                <li>උඩ මෙනු එකෙන් <strong>"Actions"</strong> කියන ටැබ් එකට යන්න.</li>
+                <li>කහ පාට රවුම කැරකිලා බිල්ඩ් වෙනවා පෙනෙයි. විනාඩි 3කින් විතර ඒක කොළ පාට (✅) වුණාම ඒක උඩ ක්ලික් කරන්න.
+                </li>
+                <li>යටම තියෙන <strong>"Artifacts"</strong> කොටසින් <code>AniShift-App-APK</code> කියන එක Download
+                    කරගන්න. ඒක ඇතුළේ ඔයාගේ අලුත් ඇප් එක තියෙනවා!</li>
+            </ul>
+        </div>
+
+        <div class="note">
+            <strong>වැදගත්:</strong> මේ විදිහට කරද්දි ඔයාගේ PC එකට කිසිම බරක් නෑ. App එක Build වෙන හැමදේම වෙන්නේ GitHub
+            Cloud සර්වර් එක ඇතුළේ!
+        </div>
+    </div>
+
+    <script>
+        function copyCode() {
+            // Text to copy to clipboard
+            const codeText = "git add .\ngit commit -m \"Update App Code\"\ngit push origin main";
+
+            navigator.clipboard.writeText(codeText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerText = 'Copied! ✅';
+                btn.style.background = '#4cd137';
+                btn.style.color = '#fff';
+
+                // Revert button text after 3 seconds
+                setTimeout(() => {
+                    btn.innerText = 'Copy Commands';
+                    btn.style.background = '#00d2ff';
+                    btn.style.color = '#0f111a';
+                }, 3000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body>
+
+</html>
