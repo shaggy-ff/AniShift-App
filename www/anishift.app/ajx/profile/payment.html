@@ -250,6 +250,79 @@
         .btn-submit:disabled { background: #444; cursor: not-allowed; opacity: 0.7; }
         .btn-submit:active:not(:disabled) { transform: scale(0.97); }
 
+        /* Custom Popup Styles */
+        .modal-popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .modal-popup-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            animation: modalFadeUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes modalFadeUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-popup-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(125, 95, 255, 0.1);
+            color: var(--accent-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1.5rem;
+        }
+        .modal-popup-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+        .modal-popup-msg { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.5rem; }
+        .modal-popup-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent-purple);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .custom-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #222;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            z-index: 10001;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+        }
+        .custom-toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .custom-toast i { color: var(--accent-purple); }
     </style>
 </head>
 
@@ -307,9 +380,23 @@
     </div>
 
     <div class="footer-action">
-        <button class="btn-submit" id="submitBtn" onclick="handlePayment()">
+        <button class="btn-submit" id="submitBtn" onclick="handlePayment()" disabled>
             Submit Payment <i class="fa-solid fa-chevron-right"></i>
         </button>
+    </div>
+
+    <!-- Custom Popups -->
+    <div id="customModal" class="modal-popup-overlay">
+        <div class="modal-popup-card">
+            <div class="modal-popup-icon" id="modalIcon"><i class="fa-solid fa-check"></i></div>
+            <h3 class="modal-popup-title" id="modalTitle">Success</h3>
+            <p class="modal-popup-msg" id="modalMsg">Action completed successfully.</p>
+            <button class="modal-popup-btn" id="modalBtn" onclick="closePopup()">OK</button>
+        </div>
+    </div>
+    <div id="customToast" class="custom-toast">
+        <i class="fa-solid fa-circle-info"></i>
+        <span id="toastMsg">Message here</span>
     </div>
 
     <script>
@@ -331,11 +418,36 @@
         firebase.initializeApp(authConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        let currentUser = null;
+
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            document.getElementById('submitBtn').disabled = false;
+        });
+
+        // === UI HELPERS ===
+        function showPopup(title, msg, icon = 'fa-check', onOk = null) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMsg').textContent = msg;
+            document.getElementById('modalIcon').innerHTML = `<i class="fa-solid ${icon}"></i>`;
+            document.getElementById('customModal').style.display = 'flex';
+            window.modalCallback = onOk;
+        }
+        function closePopup() {
+            document.getElementById('customModal').style.display = 'none';
+            if (window.modalCallback) window.modalCallback();
+        }
+        function showToast(msg) {
+            const toast = document.getElementById('customToast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 2500);
+        }
 
         function copyValue(id) {
             const text = document.getElementById(id).innerText;
             navigator.clipboard.writeText(text);
-            alert('Copied: ' + text);
+            showToast('Copied to clipboard!');
         }
 
         async function handlePayment() {
@@ -343,9 +455,9 @@
             const submitBtn = document.getElementById('submitBtn');
             const whatsapp = document.getElementById('whatsappInput').value.trim();
 
-            if (!user) return alert('Please login first.');
-            if (!whatsapp) return alert('Please enter your WhatsApp number.');
-            if (!fileInput.files[0]) return alert('Please select a photo of your slip.');
+            if (!currentUser) return showPopup('Login Required', 'Please sign in to continue with payment.', 'fa-user-lock');
+            if (!whatsapp) return showToast('WhatsApp number is required!');
+            if (!fileInput.files[0]) return showToast('Please select your payment slip!');
 
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'Uploading... <i class="fa-solid fa-spinner fa-spin"></i>';
@@ -360,9 +472,9 @@
                 if (!imgbbData.success) throw new Error('Upload Failed');
 
                 await db.collection('pending_payments').add({
-                    userId: user.uid,
-                    userEmail: user.email,
-                    whatsappNo: document.getElementById('whatsappInput').value.trim() || 'Not Provided',
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    whatsappNo: whatsapp,
                     slipUrl: imgbbData.data.url,
                     status: 'pending',
                     package: currentPlan.name + " (" + currentPlan.price + ")",
@@ -370,10 +482,11 @@
                     dateStr: new Date().toLocaleString()
                 });
 
-                alert('Payment processing. Admin will verify soon!');
-                window.location.href = '../../home.html#profile';
+                showPopup('Success!', 'Payment details submitted. Admin will verify your slip within 24 hours.', 'fa-circle-check', () => {
+                    window.location.href = '../../home.html#profile';
+                });
             } catch (e) {
-                alert('Error: ' + e.message);
+                showPopup('Submission Error', e.message, 'fa-circle-exclamation');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Submit Payment <i class="fa-solid fa-chevron-right"></i>';
             }

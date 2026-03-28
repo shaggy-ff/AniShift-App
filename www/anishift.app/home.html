@@ -2318,10 +2318,26 @@
                 guestDiv.style.display = 'none';
                 if (logoutBtn) logoutBtn.style.display = 'flex';
                 
-                userNameDisp.textContent = user.displayName || 'Pilot';
+                // 1. Initial Load from Cache (Immediate UI)
+                const cachedName = localStorage.getItem('user_name');
+                const cachedAvatar = localStorage.getItem('user_avatar');
+                if (cachedName) userNameDisp.textContent = cachedName;
+                if (cachedAvatar) userAvatarDisp.src = cachedAvatar;
+
+                // 2. Sync with Firebase Profile (Update if changed)
+                const currentName = user.displayName || 'Pilot';
+                const currentAvatar = user.photoURL || 'images/guest_avatar.png';
+
+                if (currentName !== cachedName) {
+                    userNameDisp.textContent = currentName;
+                    localStorage.setItem('user_name', currentName);
+                }
+                if (currentAvatar !== cachedAvatar) {
+                    userAvatarDisp.src = currentAvatar;
+                    localStorage.setItem('user_avatar', currentAvatar);
+                }
+
                 userEmailDisp.textContent = user.email;
-                if (user.photoURL) userAvatarDisp.src = user.photoURL;
-                else userAvatarDisp.src = 'images/guest_avatar.png';
 
                 // Real-time Badge/Premium Detection (Using Watch/Auth DB)
                 const emailKey = user.email.toLowerCase().replace(/\./g, '_at_');

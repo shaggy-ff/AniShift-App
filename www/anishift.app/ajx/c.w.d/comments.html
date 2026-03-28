@@ -474,7 +474,16 @@
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('currentUserAvatar').src = user.photoURL || '../../images/guest_avatar.png';
+                // Initial Load from Cache
+                const cachedAvatar = localStorage.getItem('user_avatar');
+                if (cachedAvatar) document.getElementById('currentUserAvatar').src = cachedAvatar;
+
+                // Sync with Firebase
+                const currentAvatar = user.photoURL || '../../images/guest_avatar.png';
+                if (currentAvatar !== cachedAvatar) {
+                    document.getElementById('currentUserAvatar').src = currentAvatar;
+                    localStorage.setItem('user_avatar', currentAvatar);
+                }
                 
                 // Sniff role for posting
                 const key = user.email.toLowerCase().replace(/\./g, '_at_');
