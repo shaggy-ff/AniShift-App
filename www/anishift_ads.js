@@ -15,6 +15,7 @@
         
         if (adClicks >= currentThreshold) {
             // Set next random threshold between 5 and 15 clicks
+            adClicks = 0;
             localStorage.setItem('anishift_ad_clicks', '0');
             localStorage.setItem('anishift_ad_thresh', Math.floor(Math.random() * 11) + 5);
 

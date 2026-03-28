@@ -6,15 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Support Us - AniShift</title>
-
-    <!-- Preconnect to speed up ad delivery -->
-    <link rel="preconnect" href="https://quge5.com" crossorigin>
-    <link rel="dns-prefetch" href="https://quge5.com">
-    <link rel="preload" href="https://quge5.com/88/tag.min.js" as="script">
-
-    <!-- Ad Script -->
-    <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
-
+    <script src="theme.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <style>
@@ -30,6 +22,9 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
         }
 
         body {
@@ -51,30 +46,10 @@
             flex-direction: column;
             align-items: center;
             gap: 2rem;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo-box {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 0.5rem;
         }
 
         .logo-box img {
-            max-width: 280px;
+            max-width: 250px;
             height: auto;
         }
 
@@ -85,51 +60,54 @@
             color: #d1d5db;
         }
 
-        #ad-status {
-            margin: 1rem 0;
-        }
-
-        .loader {
-            width: 28px;
-            height: 28px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: var(--accent-color);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 0.75rem;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
         .btn-continue {
-            background: transparent;
-            color: #ffffff;
-            border: 1.2px solid #ffffff;
-            padding: 0.85rem 3rem;
-            font-size: 0.85rem;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            cursor: pointer;
+            width: 100%;
+            padding: 1.2rem;
+            background: #1a1b26;
+            color: var(--text-muted);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 3rem;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: not-allowed;
             transition: 0.3s;
             text-transform: uppercase;
-            margin-top: 1rem;
-            opacity: 0.3;
-            pointer-events: none;
-            border-radius: 4px;
         }
 
         .btn-continue.active {
-            opacity: 1;
-            pointer-events: auto;
+            background: var(--accent-color);
+            color: #000;
+            cursor: pointer;
+            border-color: var(--accent-color);
         }
 
-        .btn-continue:active {
-            transform: scale(0.96);
-            background: rgba(255, 255, 255, 0.1);
+        #ad-status {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            color: var(--text-muted);
+            height: 20px;
+        }
+
+        .loader-dots {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
         }
     </style>
 </head>
@@ -137,94 +115,99 @@
 <body>
     <div class="container">
         <div class="logo-box">
-            <img src="images/logo.png" alt="AniShift">
+            <img src="images/logo_full.png" alt="AniShift">
         </div>
 
         <p class="message">
-            Thanks for supporting AniShift! Ads help us keep the platform 100% free and high-quality for everyone. 🙏
+            To keep providing free streaming, we rely on minimal ad support. Please wait a moment.
         </p>
 
         <div id="ad-status">
-            <div class="loader"></div>
-            <p
-                style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;">
-                Preparing Ads...
-            </p>
+            <div class="loader-dots" id="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <span id="status-text">Initializing Ads...</span>
         </div>
 
-        <button id="main-btn" class="btn-continue" onclick="continueApp()">Wait 5s...</button>
+        <button id="main-btn" class="btn-continue" onclick="handleClick()">Please Wait 5s...</button>
     </div>
+
+    <!-- Ad Tag -->
+    <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
 
     <script>
         let timeLeft = 5;
         const btn = document.getElementById('main-btn');
-        const statusDiv = document.getElementById('ad-status');
+        const statusText = document.getElementById('status-text');
+        const dots = document.getElementById('dots');
+        
+        // IMPORTANT: We use a specific visit-level flag to handle reloads
+        // If we just clicked the ad, we should be in 'verified' mode
+        const isVerified = sessionStorage.getItem('anishift_temp_verified') === 'true';
 
-        // Check if user already clicked the ad in this session
-        const adClicked = sessionStorage.getItem('anishift_ad_clicked');
-
-        if (adClicked) {
-            // Bypass timer if already clicked
-            timeLeft = 0;
-            btn.textContent = 'Enter App Now';
-            btn.classList.add('active');
-            statusDiv.innerHTML = '<p style="color: #2ed573; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Ad Verified! Thank you</p>';
+        if (isVerified) {
+            enableFinalStep();
         } else {
-            // Start Countdown Logic
-            const countdown = setInterval(() => {
+            startTimer();
+        }
+
+        function startTimer() {
+            const timer = setInterval(() => {
                 timeLeft--;
-                btn.textContent = `Wait ${timeLeft}s...`;
-
+                btn.textContent = `Please Wait ${timeLeft}s...`;
+                
                 if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    btn.textContent = 'Continue (Click to Open Ad)';
-                    btn.classList.add('active');
-
-                    statusDiv.style.opacity = '0';
-                    setTimeout(() => {
-                        statusDiv.innerHTML = '<p style="color: #2ed573; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Ready! Support Us</p>';
-                        statusDiv.style.opacity = '1';
-                    }, 300);
+                    clearInterval(timer);
+                    enableAdStep();
                 }
             }, 1000);
         }
 
-        function continueApp() {
-            if (!sessionStorage.getItem('anishift_ad_clicked')) {
-                // First click: Open ad and reload this page
-                sessionStorage.setItem('anishift_ad_clicked', 'true');
-                window.open('https://omg10.com/4/10787829', '_blank');
+        function enableAdStep() {
+            btn.textContent = "Continue (Support Us)";
+            btn.classList.add('active');
+            btn.style.cursor = 'pointer';
+            statusText.textContent = "Ready! Click to Open Support Ad";
+            statusText.style.color = "#2ed573";
+            dots.style.display = 'none';
+        }
 
-                // Redirect back to this same ad page (Reload)
-                window.location.reload();
-            } else {
-                // Second click: Proceed to App
+        function enableFinalStep() {
+            btn.classList.add('active');
+            btn.style.cursor = 'pointer';
+            btn.textContent = "Enter AniShift Now";
+            statusText.textContent = "Ad Verified! Thank you";
+            statusText.style.color = "#2ed573";
+            dots.style.display = 'none';
+            // Clear the temp flag if we are here
+        }
+
+        function handleClick() {
+            if (!btn.classList.contains('active')) return;
+
+            if (sessionStorage.getItem('anishift_temp_verified') === 'true') {
+                // Final Step: Go back to app
+                sessionStorage.removeItem('anishift_temp_verified');
                 const urlParams = new URLSearchParams(window.location.search);
-                const redirect = urlParams.get('redirect');
-                if (redirect) {
-                    window.location.href = redirect;
-                } else {
-                    window.location.href = 'anishift.app/home.html';
-                }
+                const redirect = urlParams.get('redirect') || 'anishift.app/home.html';
+                window.location.href = decodeURIComponent(redirect);
+            } else {
+                // Ad Step: Open ad and set flag
+                sessionStorage.setItem('anishift_temp_verified', 'true');
+                
+                // Open the ad
+                window.open('https://omg10.com/4/10787829', '_blank');
+                
+                // Reload to show the 'Enter' button
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             }
         }
 
-        // Prevent Back Button (Browser)
-        history.pushState(null, null, window.location.href);
-        window.onpopstate = function() {
-            history.pushState(null, null, window.location.href);
+        // Back button lock
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
         };
-
-        // Phone Back Button Fix (Capacitor)
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.Capacitor && window.Capacitor.Plugins.App) {
-                const App = window.Capacitor.Plugins.App;
-                App.addListener('backButton', () => {
-                    // Do nothing on back button click
-                    console.log('Back button disabled on ad page');
-                });
-            }
-        });
     </script>
 </body>
 
