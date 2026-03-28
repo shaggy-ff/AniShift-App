@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <style>
         /* === Variables & Theme === */
@@ -150,24 +151,147 @@
             padding-bottom: 7rem;
         }
 
+        /* Reward Popup (Matching Image) */
+        .reward-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            z-index: 100000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .reward-card {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+            animation: zoomInReward 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes zoomInReward {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .hexagon-wrap {
+            width: 160px;
+            height: 180px;
+            margin: 0 auto 3rem;
+            background: linear-gradient(135deg, #7d5fff, #4b34b1);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: glowPulse 2s infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            from { filter: drop-shadow(0 0 10px rgba(125, 95, 255, 0.2)); }
+            to { filter: drop-shadow(0 0 40px rgba(125, 95, 255, 0.6)); }
+        }
+
+        .hexagon {
+            width: 140px;
+            height: 160px;
+            background: #fff;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hexagon img {
+            width: 90px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .reward-wow {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+            color: #fff;
+        }
+
+        .reward-made-it {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        .reward-congrats {
+            font-size: 0.95rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            max-width: 280px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .reward-ok-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 1.1rem 3.5rem;
+            border-radius: 2rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .reward-ok-btn:active { transform: scale(0.95); }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 5px;
+            background: #ffd300;
+            top: -20px;
+            opacity: 0;
+            animation: confetti-fall 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
         .app-view.active {
             display: block;
         }
 
-        .skeleton {
-            background-color: var(--bg-card);
-            background-image: linear-gradient(90deg, transparent, var(--bg-secondary), transparent);
-            background-size: 200% 100%;
-            animation: skeleton-shimmer 1.5s infinite linear;
-            border-radius: 0.8rem;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
-        @keyframes skeleton-shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
 
-        .skeleton-card { width: 100%; aspect-ratio: 2/3.2; }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         html,
         body {
@@ -586,6 +710,79 @@
             inset: 0;
             background: var(--hero-gradient);
             z-index: 1;
+        }
+
+        /* Continue Watching */
+        .continue-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.625rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .continue-card {
+            background: var(--bg-card);
+            border-radius: 0.85rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: var(--text-light);
+            border: 1px solid var(--glass-border);
+            transition: 0.2s;
+            min-width: 0;
+        }
+
+        .continue-card:active {
+            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .continue-img {
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 0.6rem;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .continue-info {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .continue-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.15rem;
+            display: block;
+        }
+
+        .continue-ep {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        .continue-progress-bg {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .continue-progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 10px;
         }
 
         .hero-content {
@@ -1317,10 +1514,23 @@
 
         /* Skeleton Framework */
         .skeleton {
-            background: linear-gradient(90deg, #0d0f14 25%, #1a1d26 50%, #0d0f14 75%);
+            background: rgba(255, 255, 255, 0.05);
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.02) 25%, 
+                rgba(255, 255, 255, 0.07) 50%, 
+                rgba(255, 255, 255, 0.02) 75%);
             background-size: 200% 100%;
-            animation: skeleton-shimmer 1.5s infinite linear;
+            animation: skeleton-shimmer 2s infinite linear;
             border-radius: 0.8rem;
+        }
+
+        html.light-theme .skeleton {
+            background: rgba(0, 0, 0, 0.05);
+            background: linear-gradient(90deg, 
+                rgba(0, 0, 0, 0.02) 25%, 
+                rgba(0, 0, 0, 0.07) 50%, 
+                rgba(0, 0, 0, 0.02) 75%);
+            background-size: 200% 100%;
         }
 
         @keyframes skeleton-shimmer {
@@ -1329,7 +1539,7 @@
         }
 
         .skeleton-card {
-            aspect-ratio: 2/3;
+            aspect-ratio: 1/1.4;
             width: 100%;
             border-radius: 0.8rem;
             margin-bottom: 0.6rem;
@@ -1483,6 +1693,14 @@
         </section>
 
         <main>
+            <section id="continueSection" class="section-container" style="display: none; padding-bottom: 0.5rem;">
+                <div class="section-header">
+                    <h2 class="section-title">Continue Watching</h2>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <div id="continueGrid" class="continue-grid"></div>
+            </section>
+
             <section class="section-container">
                 <div class="section-header">
                     <h2 class="section-title">Trending Now</h2>
@@ -1586,7 +1804,7 @@
 
         <!-- Authorized Content -->
         <div id="profile-authorized" style="display: none;">
-            <div class="section-label">General</div>
+            <div class="section-label">Member Features</div>
             <div class="menu-list">
                 <a href="ajx/profile/edit_profile.html" class="menu-item">
                     <div class="menu-left"><i class="fa-regular fa-circle-user"></i> <span>Profile Edit</span></div>
@@ -1596,13 +1814,10 @@
                     <div class="menu-left"><i class="fa-regular fa-bookmark"></i> <span>My Watchlist</span></div>
                     <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
                 </a>
-                <a href="javascript:void(0)" class="menu-item" style="opacity: 0.8;">
-                    <div class="menu-left"><i class="fa-solid fa-crown" style="color: #ffd700;"></i> <span>Ads-Free
-                            Experience</span></div>
+                <a href="ajx/profile/subscription.html" class="menu-item">
+                    <div class="menu-left"><i class="fa-solid fa-crown" style="color: #ffd700;"></i> <span>Ads-Free Experience</span></div>
                     <div class="menu-right">
-                        <span
-                            style="background: #ffd700; color: #000; font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-weight: 800; text-transform: uppercase;">Coming
-                            Soon</span>
+                        <span style="background: #ffd700; color: #000; font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-weight: 800; text-transform: uppercase;">Upgrade</span>
                     </div>
                 </a>
             </div>
@@ -1618,6 +1833,14 @@
                 Create an account to track your watchlist, share thoughts, and sync your data across devices.
             </p>
             <a href="auth.html" class="guest-login-btn">Login or Register</a>
+        </div>
+
+        <div class="section-label">General</div>
+        <div class="menu-list">
+            <a href="ajx/profile/history.html" class="menu-item">
+                <div class="menu-left"><i class="fa-solid fa-clock-rotate-left"></i> <span>History</span></div>
+                <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
+            </a>
         </div>
         <div class="section-label">Appearance</div>
         <div class="menu-list">
@@ -1929,6 +2152,35 @@
             switchView(hash);
         };
 
+        function showRewardPopup() {
+            const popup = document.getElementById('reward-popup');
+            const holder = document.getElementById('confetti-holder');
+            popup.style.display = 'flex';
+            
+            // Generate confetti
+            const colors = ['#f2d74e', '#95c3de', '#ff9a91', '#a2dcc1', '#7d5fff'];
+            for (let i = 0; i < 60; i++) {
+                const p = document.createElement('div');
+                p.className = 'confetti-piece';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.animationDelay = Math.random() * 3 + 's';
+                p.style.width = Math.random() * 10 + 5 + 'px';
+                p.style.height = p.style.width;
+                p.style.borderRadius = '50%'; 
+                holder.appendChild(p);
+            }
+            document.body.style.overflow = 'hidden';
+            // Play a success sound if desired, or just let visuals talk
+        }
+
+        function closeReward() {
+            document.getElementById('reward-popup').style.display = 'none';
+            localStorage.setItem('reward_shown', 'true');
+            document.body.style.overflow = 'auto';
+            window.location.reload(); // Refresh to clean ads and status
+        }
+
         // === FIREBASE CONFIG ===
         const dbConfig = {
             apiKey: "AIzaSyCMpcM6vnlZF_Vbr4FHOJiRph0EsCmLHuQ",
@@ -1957,29 +2209,132 @@
         const rtdb = dbApp.database();
         const auth = authApp.auth();
 
-        // Check Auth State
-        auth.onAuthStateChanged(user => {
-            if (!user && !sessionStorage.getItem('guest_session')) {
-                window.location.href = 'auth.html';
+        // --- GLOBAL SYSTEM CONTROL LOGIC ---
+        let userRole = 'guest';
+
+        async function getAppBuild() {
+            if (window.Capacitor && window.Capacitor.Plugins.App) {
+                try {
+                    const info = await window.Capacitor.Plugins.App.getInfo();
+                    return parseInt(info.build) || 10;
+                } catch (e) {
+                    return 10;
+                }
+            }
+            return 10; // Fallback for Web/Browser
+        }
+
+        async function checkSystemControl() {
+            const currentBuild = await getAppBuild();
+            console.log("Current App Build:", currentBuild);
+            
+            const blockScreen = document.getElementById('system-block-screen');
+            const lottie = blockScreen.querySelector('lottie-player');
+            const title = document.getElementById('system-title');
+            const msg = document.getElementById('system-msg');
+            const btn = document.getElementById('system-btn');
+            
+            // Hardcoded Local Lottie Source
+            const localLottie = 'ajx/c.w.d/json/update.json';
+
+            // 1. Check User Role
+            const currentUser = auth.currentUser;
+            if (currentUser && currentUser.email) {
+                const key = currentUser.email.toLowerCase().replace(/\./g, '_at_');
+                const userSnap = await rtdb.ref(`access_control/${key}`).once('value');
+                const userData = userSnap.val();
+                if (userData) userRole = userData.role;
+            }
+
+            if (userRole === 'admin') {
+                console.log("Admin Bypass: System checks skipped.");
                 return;
             }
 
+            // 2. Maintenance Check
+            const maintSnap = await rtdb.ref('system_control/maintenance').once('value');
+            const maint = maintSnap.val();
+            if (maint && maint.active) {
+                blockScreen.style.display = 'flex';
+                title.textContent = 'System Maintenance';
+                msg.textContent = maint.message || 'We are currently performing maintenance. Please check back later.';
+                lottie.load(localLottie);
+                document.body.style.overflow = 'hidden';
+                return; // BLOCK
+            }
+
+            // 3. Update Check
+            const updateSnap = await rtdb.ref('app_update').once('value');
+            const update = updateSnap.val();
+            if (update && update.active && (update.versionCode > currentBuild)) {
+                if (update.forced) {
+                    blockScreen.style.display = 'flex';
+                    title.textContent = update.title || 'Update Required';
+                    msg.textContent = update.message || 'A new version is available. Please update to continue.';
+                    lottie.load(localLottie);
+                    btn.style.display = 'flex';
+                    btn.href = update.link || '#';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    // Optional: Show a toast or modal for non-forced updates
+                    showToast(`New update available: ${update.title}`);
+                }
+            }
+        }
+
+        // Check Auth State
+        auth.onAuthStateChanged(user => {
+            checkSystemControl(); // Run check on auth change
+            const userNameDisp = document.getElementById('userNameDisp');
+            const userEmailDisp = document.getElementById('userEmailDisp');
+            const userAvatarDisp = document.getElementById('userAvatarDisp');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const guestDiv = document.getElementById('profile-guest');
+            const authDiv = document.getElementById('profile-authorized');
+
             if (user) {
                 // Member State
-                document.getElementById('profile-authorized').style.display = 'block';
-                document.getElementById('profile-guest').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'flex';
-                if (user.displayName) document.getElementById('userNameDisp').textContent = user.displayName;
-                if (user.email) document.getElementById('userEmailDisp').textContent = user.email;
-                if (user.photoURL) document.getElementById('userAvatarDisp').src = user.photoURL;
+                authDiv.style.display = 'block';
+                guestDiv.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'flex';
+                
+                userNameDisp.textContent = user.displayName || 'Pilot';
+                userEmailDisp.textContent = user.email;
+                if (user.photoURL) userAvatarDisp.src = user.photoURL;
+                else userAvatarDisp.src = 'images/guest_avatar.png';
+
+                // Real-time Badge/Premium Detection
+                const emailKey = user.email.toLowerCase().replace(/\./g, '_at_');
+                rtdb.ref(`access_control/${emailKey}`).on('value', snap => {
+                    const data = snap.val();
+                    if (data) {
+                        const now = Date.now();
+                        const currentRole = data.role;
+                        // Expiry Check for Subscribers
+                        const isSubActive = (currentRole === 'subscriber' && data.expiry > now);
+                        const isAdmin = (currentRole === 'admin');
+
+                        if (isSubActive || isAdmin) {
+                            localStorage.setItem('subscriber_status', 'true');
+                            // If badge not shown yet, show it (Only for Subscribers)
+                            if (isSubActive && !localStorage.getItem('reward_shown')) {
+                                showRewardPopup();
+                            }
+                        } else {
+                            localStorage.removeItem('subscriber_status');
+                        }
+                    }
+                });
             } else {
                 // Guest State
-                document.getElementById('profile-authorized').style.display = 'none';
-                document.getElementById('profile-guest').style.display = 'flex';
-                document.getElementById('logoutBtn').style.display = 'none';
-                document.getElementById('userNameDisp').textContent = 'Guest User';
-                document.getElementById('userEmailDisp').textContent = 'Not signed in';
-                document.getElementById('userAvatarDisp').src = 'images/guest_avatar.png';
+                authDiv.style.display = 'none';
+                guestDiv.style.display = 'flex';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                userNameDisp.textContent = userData.name || 'Guest Pilot';
+                userEmailDisp.textContent = 'Sign in to sync your data';
+                userAvatarDisp.src = userData.avatar || 'images/guest_avatar.png';
             }
         });
 
@@ -2105,6 +2460,36 @@
             }
         }
 
+        function loadContinueWatching() {
+            try {
+                const history = JSON.parse(localStorage.getItem('continueWatching') || '[]');
+                const container = document.getElementById('continueSection');
+                const grid = document.getElementById('continueGrid');
+                if (!container || !grid) return;
+                
+                if (history.length === 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                container.style.display = 'block';
+                grid.innerHTML = history.slice(0, 4).map(item => `
+                    <a href="ajx/c.w.d/watch.html?id=${item.id}&ep=${item.ep}" class="continue-card">
+                        <img src="${item.img}" class="continue-img" alt="">
+                        <div class="continue-info">
+                            <span class="continue-title">${item.title}</span>
+                            <span class="continue-ep">Episode ${item.ep}</span>
+                            <div class="continue-progress-bg">
+                                <div class="continue-progress-fill" style="width: 45%"></div>
+                            </div>
+                        </div>
+                    </a>
+                `).join('');
+            } catch (e) {
+                console.error("Error loading history:", e);
+            }
+        }
+
         async function initHome() {
             const cacheKey = 'home_anilist_data';
             const cacheTimeKey = 'home_anilist_data_time';
@@ -2114,6 +2499,19 @@
 
             // Always fetch Hero Slider from RTDB as it's curated
             fetchHeroSlider();
+            
+            // Continue Watching Skeleton
+            const contGrid = document.getElementById('continueGrid');
+            const contSect = document.getElementById('continueSection');
+            const hasHistory = localStorage.getItem('continueWatching');
+            if (hasHistory && JSON.parse(hasHistory).length > 0) {
+                contSect.style.display = 'block';
+                contGrid.innerHTML = Array(2).fill(`
+                    <div class="continue-card skeleton" style="border:none; height: 60px;"></div>
+                `).join('');
+            }
+
+            loadContinueWatching();
 
             // Immediate UI feedback with Skeleton
             document.getElementById('trending-row').innerHTML = Array(6).fill('<div class="rec-card"><div class="skeleton-card skeleton"></div><div class="skeleton-text skeleton" style="width: 70%"></div></div>').join('');
@@ -2414,7 +2812,7 @@
 
         async function fetchAnime() {
             const grid = document.getElementById('resultsGrid'); const loader = document.getElementById('discover-loader');
-            grid.innerHTML = Array(6).fill('<div class="skeleton-card skeleton"></div>').join('');
+            loader.style.display = 'block'; grid.innerHTML = '';
 
             const ids = await getDbAnimeIds();
             if (!ids.length) {
@@ -2543,6 +2941,31 @@
             }
         });
     </script>
+    <!-- Reward Popup -->
+    <div id="reward-popup" class="reward-overlay">
+        <div id="confetti-holder"></div>
+        <div class="reward-card">
+            <div class="hexagon-wrap">
+                <div class="hexagon">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5969/5969111.png" alt="Trophy">
+                </div>
+            </div>
+            <h1 class="reward-wow">Wow!</h1>
+            <h2 class="reward-made-it">You've made it.</h2>
+            <p class="reward-congrats">Congratulations,<br>you received a new badge.</p>
+            <button class="reward-ok-btn" onclick="closeReward()">AWESOME!</button>
+        </div>
+    </div>
+
+    <!-- Global System Blocking Overlay -->
+    <div id="system-block-screen" style="display:none; position:fixed; inset:0; background:var(--bg-main); z-index:99999; flex-direction:column; align-items:center; justify-content:center; padding: 2.5rem; text-align: center;">
+        <div id="system-lottie" style="width: 250px; height: 250px; margin-bottom: 2rem;">
+            <lottie-player src="" background="transparent" speed="1" loop autoplay></lottie-player>
+        </div>
+        <h1 id="system-title" style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">System Update</h1>
+        <p id="system-msg" style="color: var(--text-muted); font-size: 0.95rem; font-weight: 500; line-height: 1.6; max-width: 400px; margin-bottom: 2.5rem;"></p>
+        <a id="system-btn" href="#" class="guest-login-btn" style="width: 100%; max-width: 300px; display: none; text-decoration: none;">Update Now</a>
+    </div>
 </body>
 
 </html>

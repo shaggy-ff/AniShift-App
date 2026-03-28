@@ -56,6 +56,37 @@
             display: none;
         }
 
+        /* Skeleton Framework */
+        .skeleton {
+            background: rgba(255, 255, 255, 0.05);
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.03) 25%, 
+                rgba(255, 255, 255, 0.08) 50%, 
+                rgba(255, 255, 255, 0.03) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite linear;
+            border-radius: 0.5rem;
+        }
+
+        html.light-theme .skeleton {
+            background: rgba(0, 0, 0, 0.05);
+            background: linear-gradient(90deg, 
+                rgba(0, 0, 0, 0.03) 25%, 
+                rgba(0, 0, 0, 0.08) 50%, 
+                rgba(0, 0, 0, 0.03) 75%);
+            background-size: 200% 100%;
+        }
+
+        @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-title { width: 80%; height: 1.5rem; margin-bottom: 0.75rem; }
+        .skeleton-meta { width: 60%; height: 1rem; margin-bottom: 1.5rem; }
+        .skeleton-box { width: 100%; height: 2.5rem; margin-bottom: 1rem; }
+        .skeleton-ep { width: 100%; height: 3rem; margin-bottom: 0.5rem; }
+
         /* Nav Overlay */
         .nav-overlay {
             position: absolute;
@@ -798,18 +829,21 @@
 
 <body>
 
-    <div id="loader" style="position:fixed; inset:0; background:var(--bg-main); z-index:9000;">
-        <div class="skeleton-player skeleton"></div>
+    <div id="loader" style="position:fixed; inset:0; background:var(--bg-main); z-index:9000; overflow: hidden; padding-top: 0;">
+        <div class="skeleton" style="width: 100%; aspect-ratio: 16/9; border-radius: 0;"></div>
         <div style="padding: 1.5rem 1.25rem;">
             <div class="skeleton-title skeleton"></div>
-            <div class="skeleton-text skeleton" style="width: 30%;"></div>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <div class="skeleton-meta skeleton" style="width: 30%;"></div>
+            
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem;">
                 <div class="skeleton" style="flex: 1; height: 3rem;"></div>
                 <div class="skeleton" style="flex: 1; height: 3rem;"></div>
             </div>
-            <div style="margin-top: 2rem;">
-                <div class="skeleton" style="width: 100%; height: 60px; margin-bottom: 1rem;"></div>
-                <div class="skeleton" style="width: 100%; height: 60px; margin-bottom: 1rem;"></div>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="skeleton" style="width: 100%; height: 75px;"></div>
+                <div class="skeleton" style="width: 100%; height: 75px;"></div>
+                <div class="skeleton" style="width: 100%; height: 75px;"></div>
             </div>
         </div>
     </div>
@@ -1408,10 +1442,35 @@
                 }
                 if (snap.exists) {
                     currentEpData = snap.data();
+                    saveProgessToHistory(); // Check and Save
+                    startPlayer(); // Start the player logic
+                } else {
+                    currentEpData = null;
+                    startPlayer(); // Start with empty state
                 }
             } catch (e) {
                 console.error("Error fetching episode data", e);
+                startPlayer();
             }
+        }
+
+        function saveProgessToHistory() {
+            if (!currentAnime || !currentEpData || !currentEpData.links || !currentEpData.links.rpm_video_id) {
+                return; // SKIP saving if video ID is missing
+            }
+
+            const title = currentAnime.title.english || currentAnime.title.romaji;
+            let cwList = JSON.parse(localStorage.getItem('continueWatching') || '[]');
+            cwList = cwList.filter(a => a.id !== currentAnime.id);
+            cwList.unshift({ 
+                id: currentAnime.id, 
+                title: title, 
+                img: currentAnime.coverImage.extraLarge, 
+                ep: currentEp 
+            });
+            
+            if (cwList.length > 20) cwList.pop(); // Keep top 20
+            localStorage.setItem('continueWatching', JSON.stringify(cwList));
         }
 
         async function initWatch() {
@@ -1563,13 +1622,6 @@
                 epTabs.style.display = 'none';
                 renderChunk(0);
             }
-
-            // Save to Continue Watching
-            let cwList = JSON.parse(localStorage.getItem('continueWatching') || '[]');
-            cwList = cwList.filter(a => a.id !== anime.id);
-            cwList.unshift({ id: anime.id, title: title, img: anime.coverImage.extraLarge, ep: currentEp });
-            if (cwList.length > 10) cwList.pop();
-            localStorage.setItem('continueWatching', JSON.stringify(cwList));
         }
 
         async function fetchAniListDataBatch(ids) {

@@ -6,18 +6,51 @@
 
     if (excludedPages.includes(currentPage)) return;
 
+    let isPremium = false;
+    
+    // Check if user is Admin or Subscriber (No Ads)
+    const checkPremium = () => {
+        const auth = window.firebase ? window.firebase.auth() : null;
+        const rtdb = window.firebase ? window.firebase.database() : null;
+        
+        if (auth && rtdb) {
+            auth.onAuthStateChanged(user => {
+                if (user && user.email) {
+                    const key = user.email.toLowerCase().replace(/\./g, '_at_');
+                    // Using once to avoid keeping connection open (Save RTDB limits)
+                    rtdb.ref(`access_control/${key}`).once('value').then(snap => {
+                        const data = snap.val();
+                        if (data) {
+                            const now = Date.now();
+                            // If admin: bypass. If subscriber: check if not expired.
+                            if (data.role === 'admin' || (data.role === 'subscriber' && data.expiry > now)) {
+                                isPremium = true;
+                                console.log("Premium Active: Ads Disabled");
+                            } else {
+                                isPremium = false;
+                                console.log("Premium Expired or Not Active: Ads Enabled");
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    };
+    checkPremium();
+
     let adClicks = parseInt(localStorage.getItem('anishift_ad_clicks') || '0');
-    let currentThreshold = parseInt(localStorage.getItem('anishift_ad_thresh') || '10');
+    let currentThreshold = parseInt(localStorage.getItem('anishift_ad_thresh') || '15');
 
     function handleGlobalTap() {
+        if (isPremium) return; // BYPASS ADS FOR ADMINS/SUBS
         adClicks++;
         localStorage.setItem('anishift_ad_clicks', adClicks);
         
         if (adClicks >= currentThreshold) {
-            // Set next random threshold between 5 and 15 clicks
+            // Set next random threshold between 10 and 20 clicks
             adClicks = 0;
             localStorage.setItem('anishift_ad_clicks', '0');
-            localStorage.setItem('anishift_ad_thresh', Math.floor(Math.random() * 11) + 5);
+            localStorage.setItem('anishift_ad_thresh', Math.floor(Math.random() * 11) + 10);
 
             const returnTo = encodeURIComponent(window.location.href);
             

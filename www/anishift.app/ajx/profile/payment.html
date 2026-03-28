@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Payment - AniShift Premium</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script src="../../../theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --accent-purple: #7d5fff;
+            --card-dark: #1e1e1e;
+            --text-light: #ffffff;
+            --text-muted: #a0a0a0;
+            --border: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Wavy Header (Matched with subscription.html) */
+        .top-blob {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #7d5fff 0%, #4b34b1 100%);
+            border-bottom-left-radius: 50% 30px;
+            border-bottom-right-radius: 50% 30px;
+            z-index: -1;
+        }
+
+        .header {
+            padding: 2rem 1.5rem;
+            padding-top: calc(2rem + env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .back-btn:active { transform: scale(0.85); background: rgba(255, 255, 255, 0.1); }
+
+        .container {
+            flex: 1;
+            padding: 1.5rem;
+            padding-top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-sub {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 300px;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        /* Bank Details Card (Matched with image) */
+        .bank-card {
+            width: 100%;
+            background: var(--card-dark);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: left;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .bank-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bank-title-row i {
+            font-size: 1.5rem;
+            color: var(--accent-purple);
+        }
+
+        .bank-title-row h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent-purple);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .copy-btn:active { transform: scale(0.95); opacity: 0.8; }
+
+        /* Upload Slip Section */
+        .upload-section {
+            width: 100%;
+            background: var(--card-dark);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .upload-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer Action */
+        .footer-action {
+            width: 100%;
+            padding: 1.5rem;
+            padding-bottom: calc(2.5rem + env(safe-area-inset-top));
+            background: linear-gradient(to top, var(--bg-dark) 70%, transparent 100%);
+            position: sticky;
+            bottom: 0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 64px;
+            background: var(--accent-purple);
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-submit:disabled { background: #444; cursor: not-allowed; opacity: 0.7; }
+        .btn-submit:active:not(:disabled) { transform: scale(0.97); }
+
+    </style>
+</head>
+
+<body>
+    <div class="top-blob"></div>
+
+    <header class="header">
+        <a href="subscription.html" class="back-btn">
+            <i class="fa-solid fa-arrow-left-long"></i>
+        </a>
+    </header>
+
+    <div class="container">
+        <h1 class="hero-title">Confirm Payment</h1>
+        <p class="hero-sub">1 Month Premium Activation</p>
+
+        <div class="bank-card">
+            <div class="bank-title-row">
+                <i class="fa-solid fa-building-columns"></i>
+                <h2>Bank Transfer Details</h2>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-info">
+                    <span class="label">Bank & Branch</span>
+                    <p class="value" id="val-bank">Bank of Ceylon (BOC) - Kithulgala (282)</p>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-info">
+                    <span class="label">Account Name</span>
+                    <p class="value" id="val-name">MR P L V GEETHIKA</p>
+                </div>
+                <button class="copy-btn" onclick="copyValue('val-name')">COPY</button>
+            </div>
+
+            <div class="detail-item" style="margin-bottom: 0;">
+                <div class="detail-info">
+                    <span class="label">Account Number</span>
+                    <p class="value" id="val-num">0077352515</p>
+                </div>
+                <button class="copy-btn" onclick="copyValue('val-num')">COPY</button>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-title"><i class="fa-solid fa-receipt"></i> Upload Slip Image</div>
+            <input type="file" id="slipInput" accept="image/*">
+            <p style="font-size: 0.75rem; color: #ffbc00; margin-top: 8px;">* Verification takes 1-24 hours</p>
+        </div>
+    </div>
+
+    <div class="footer-action">
+        <button class="btn-submit" id="submitBtn" onclick="handlePayment()">
+            Submit Payment <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        // === FIREBASE CONFIG ===
+        const authConfig = {
+            apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
+            authDomain: "anishift-5d14b.firebaseapp.com",
+            projectId: "anishift-5d14b",
+            storageBucket: "anishift-5d14b.firebasestorage.app",
+            messagingSenderId: "390267133940",
+            appId: "1:390267133940:web:a735ebcab0c60295bc23a1"
+        };
+        firebase.initializeApp(authConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        function copyValue(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text);
+            alert('Copied: ' + text);
+        }
+
+        async function handlePayment() {
+            const fileInput = document.getElementById('slipInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const user = auth.currentUser;
+
+            if (!user) return alert('Please login first.');
+            if (!fileInput.files[0]) return alert('Please select a photo of your slip.');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Uploading... <i class="fa-solid fa-spinner fa-spin"></i>';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+                const imgbbResponse = await fetch('https://api.imgbb.com/1/upload?key=609e6c2fbfb18e2fb9c18f31428ad8b9', {
+                    method: 'POST', body: formData
+                });
+                const imgbbData = await imgbbResponse.json();
+                if (!imgbbData.success) throw new Error('Upload Failed');
+
+                await db.collection('pending_payments').add({
+                    userId: user.uid,
+                    userEmail: user.email,
+                    slipUrl: imgbbData.data.url,
+                    status: 'pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    dateStr: new Date().toLocaleString()
+                });
+
+                alert('Payment processing. Admin will verify soon!');
+                window.location.href = '../../home.html#profile';
+            } catch (e) {
+                alert('Error: ' + e.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Payment <i class="fa-solid fa-chevron-right"></i>';
+            }
+        }
+
+        // Apply theme color
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.AniShiftTheme) {
+                const color = window.AniShiftTheme.getColor();
+                document.documentElement.style.setProperty('--accent-purple', color);
+                const blob = document.querySelector('.top-blob');
+                blob.style.background = `linear-gradient(135deg, ${color} 0%, #1e1e2e 100%)`;
+            }
+        });
+
+        // Capacitor Back Button
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Capacitor && window.Capacitor.Plugins.App) {
+                const App = window.Capacitor.Plugins.App;
+                App.addListener('backButton', ({ canGoBack }) => {
+                    if (canGoBack) window.history.back();
+                    else App.exitApp();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
