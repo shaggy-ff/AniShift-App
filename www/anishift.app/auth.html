@@ -237,7 +237,7 @@
 
     <div class="auth-container">
         <div class="brand-logo">
-            <img id="dynamicLogo" src="images/logo.png" alt="AniShift">
+            <img id="dynamicLogo" src="images/icon.png" alt="AniShift">
             <h2>Log In</h2>
         </div>
 
@@ -257,7 +257,8 @@
                             <span class="input-label">Password</span>
                             <i class="fa-solid fa-lock field-icon"></i>
                             <input type="password" id="login-pass" placeholder="••••••••" required>
-                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('login-pass', this)"></i>
+                            <i class="fa-regular fa-eye toggle-password"
+                                onclick="togglePasswordVisibility('login-pass', this)"></i>
                         </div>
                     </div>
                     <div class="auth-extras">
@@ -275,7 +276,9 @@
                 </div>
 
                 <div style="margin-top: 2rem; text-align: center;">
-                    <a href="javascript:void(0)" onclick="continueAsGuest()" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none; font-weight: 700; opacity: 0.7;">Continue as Guest</a>
+                    <a href="javascript:void(0)" onclick="continueAsGuest()"
+                        style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none; font-weight: 700; opacity: 0.7;">Continue
+                        as Guest</a>
                 </div>
             </div>
 
@@ -301,7 +304,8 @@
                             <span class="input-label">Password</span>
                             <i class="fa-solid fa-lock field-icon"></i>
                             <input type="password" id="signup-pass" placeholder="Create a strong password" required>
-                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('signup-pass', this)"></i>
+                            <i class="fa-regular fa-eye toggle-password"
+                                onclick="togglePasswordVisibility('signup-pass', this)"></i>
                         </div>
                     </div>
                     <div id="signup-error" class="error-msg"></div>
@@ -324,7 +328,8 @@
                         </div>
                     </div>
                     <div id="forgot-error" class="error-msg"></div>
-                    <div id="forgot-success" style="color: #2ed573; font-size: 0.9rem; font-weight: 700; margin-top: 1rem; display: none; text-align: center;">
+                    <div id="forgot-success"
+                        style="color: #2ed573; font-size: 0.9rem; font-weight: 700; margin-top: 1rem; display: none; text-align: center;">
                         <i class="fa-solid fa-circle-check"></i> Reset email sent!
                     </div>
                     <button type="submit" id="btn-forgot" class="btn-auth">Send Reset Link</button>
@@ -355,7 +360,7 @@
             document.getElementById('login-view').style.display = mode === 'login' ? 'block' : 'none';
             document.getElementById('signup-view').style.display = mode === 'signup' ? 'block' : 'none';
             document.getElementById('forgot-view').style.display = mode === 'forgot' ? 'block' : 'none';
-            
+
             // Update Title
             const titles = { login: 'Log In', signup: 'Sign Up', forgot: 'Reset' };
             document.querySelector('.brand-logo h2').innerText = titles[mode];
@@ -383,11 +388,11 @@
             const error = document.getElementById('forgot-error');
             const success = document.getElementById('forgot-success');
             const btn = document.getElementById('btn-forgot');
-            
+
             error.textContent = '';
             success.style.display = 'none';
             showLoader(true);
-            
+
             try {
                 await auth.sendPasswordResetEmail(email);
                 success.style.display = 'block';
@@ -439,8 +444,7 @@
             // Social Auth Disabled per UI change
         }
 
-        // Apply generated logo
-        document.getElementById('dynamicLogo').src = 'C:/Users/MR Vinoth/.gemini/antigravity/brain/4ec030d3-b864-480b-a344-5d6dca1f336c/anishift_auth_logo_1774505958534.png';
+        // Apply local assets
 
         function continueAsGuest() {
             sessionStorage.setItem('guest_session', 'true');
@@ -449,6 +453,21 @@
 
         auth.onAuthStateChanged(user => {
             if (user) window.location.href = 'home.html';
+        });
+    </script>
+    <script>
+        // Phone Back Button Fix
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Capacitor && window.Capacitor.Plugins.App) {
+                const App = window.Capacitor.Plugins.App;
+                App.addListener('backButton', ({ canGoBack }) => {
+                    if (canGoBack) {
+                        window.history.back(); // කලින් පිටුවක් තියෙනවා නම් ඒකට යන්න
+                    } else {
+                        App.exitApp(); // මුල්ම පිටුවේ ඉන්නවා නම් විතරක් ඇප් එකෙන් එළියට යන්න
+                    }
+                });
+            }
         });
     </script>
 </body>

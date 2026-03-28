@@ -3,19 +3,28 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Edit Profile - AniShift</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
     <style>
         :root {
             --bg-main: #0a0b10;
-            --bg-secondary: #14151e;
+            --bg-card: #222433;
             --accent-color: #1e90ff;
             --text-light: #ffffff;
-            --text-muted: #9ca3af;
+            --text-muted: #8a8d9b;
+            --input-bg: #11121a;
         }
 
         * {
@@ -23,266 +32,432 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
-        }
-
-        html {
-            background-color: #000;
-            font-size: clamp(14px, 4.2vw, 18px);
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-main);
             color: var(--text-light);
-            width: 100%;
-            margin: 0;
             min-height: 100dvh;
-            position: relative;
-            overflow-x: hidden;
-            padding-bottom: 5rem;
-        }
-
-        /* Nav Overlay matching Details page */
-        .nav-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 1.25rem;
-            padding-top: calc(1.25rem + env(safe-area-inset-top));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .nav-btn {
-            width: 2.75rem;
-            height: 2.75rem;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            padding-top: calc(1.5rem + env(safe-area-inset-top));
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+        }
+
+        .edit-card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 1.5rem;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            color: var(--text-muted);
+            font-size: 1.2rem;
             cursor: pointer;
-            text-decoration: none;
             transition: 0.3s;
         }
 
-        .nav-btn:active { transform: scale(0.9); }
-
-        /* Hero Header */
-        .hero-edit {
-            height: 16rem;
-            background: linear-gradient(to bottom, rgba(30, 144, 255, 0.15), var(--bg-main)), 
-                        url('https://wallpapers.com/images/featured/anime-scenery-background-5v0p9kvy2p3tqy0e.jpg');
-            background-size: cover;
-            background-position: center;
+        .header {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: flex-end;
-            padding-bottom: 2rem;
-            text-align: center;
-            animation: fadeIn 0.8s ease-out;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
         }
 
-        .avatar-edit-container {
+        .header i {
+            font-size: 1.4rem;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .avatar-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .avatar-container {
             position: relative;
-            margin-bottom: 1rem;
-            animation: float 3s ease-in-out infinite;
+            width: 120px;
+            height: 120px;
         }
 
-        .avatar-preview {
-            width: 6.5rem;
-            height: 6.5rem;
+        .avatar-img {
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--accent-color);
-            box-shadow: 0 0 20px rgba(30, 144, 255, 0.3);
+            border: 2px solid var(--accent-color);
+            padding: 3px;
+            background: #000;
         }
 
-        .edit-camera-icon {
+        .edit-badge {
             position: absolute;
-            bottom: 0.2rem;
-            right: 0.2rem;
+            bottom: 5px;
+            right: 5px;
+            width: 32px;
+            height: 32px;
             background: var(--accent-color);
-            color: #000;
-            width: 2rem;
-            height: 2rem;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            border: 2px solid var(--bg-main);
-        }
-
-        /* Form Content */
-        .form-content {
-            padding: 2rem 1.25rem;
-        }
-
-        .section-h {
-            font-size: 1rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            margin-bottom: 2rem;
             color: #fff;
-            opacity: 0;
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
-
-        .section-h::before {
-            content: '';
-            width: 0.25rem;
-            height: 1.25rem;
-            background: var(--accent-color);
-            border-radius: 0.2rem;
+            font-size: 0.85rem;
+            border: 2px solid var(--bg-card);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         .input-group {
-            margin-bottom: 1.8rem;
-            opacity: 0;
-            transform: translateY(15px);
-            animation: fadeInUp 0.5s ease-out forwards;
+            margin-bottom: 2rem;
         }
-
-        .input-group:nth-child(2) { animation-delay: 0.1s; }
-        .input-group:nth-child(3) { animation-delay: 0.2s; }
-        .input-group:nth-child(4) { animation-delay: 0.3s; }
 
         .input-group label {
             display: block;
-            font-size: 0.7rem;
-            font-weight: 700;
+            font-size: 0.75rem;
+            font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05rem;
+            letter-spacing: 0.5px;
             margin-bottom: 0.75rem;
         }
 
-        .input-group input, .input-group textarea {
-            width: 100%;
-            background: #11121a;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .input-wrapper {
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
             padding: 1rem 1.25rem;
-            border-radius: 1rem;
-            color: #fff;
-            font-size: 0.9rem;
-            outline: none;
             transition: 0.3s;
         }
 
-        .input-group input:focus, .input-group textarea:focus {
+        .input-wrapper:focus-within {
             border-color: var(--accent-color);
-            background: #181a25;
-            box-shadow: 0 0 15px rgba(30, 144, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1);
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            outline: none;
         }
 
         .save-btn {
             width: 100%;
-            margin-top: 2rem;
-            padding: 1.1rem;
             background: var(--accent-color);
-            color: #000;
+            color: #fff;
             border: none;
-            border-radius: 3rem;
+            padding: 1.1rem;
+            border-radius: 0.75rem;
             font-size: 1rem;
             font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0;
-            animation: fadeInUp 0.6s ease-out forwards 0.4s;
+            box-shadow: 0 10px 25px rgba(30, 144, 255, 0.3);
+            transition: 0.3s;
         }
 
-        .save-btn:active { transform: scale(0.96); }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        .save-btn:active {
+            transform: scale(0.97);
+            opacity: 0.9;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(34, 36, 51, 0.8);
+            backdrop-filter: blur(5px);
+            border-radius: 1.5rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Crop Modal Styles */
+        .crop-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .crop-container {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .crop-btns {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .btn-crop-action {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-crop-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-crop-save { background: var(--accent-color); color: #fff; }
     </style>
 </head>
 
 <body>
-    <div class="nav-overlay">
-        <a href="../../home.html#profile" class="nav-btn"><i class="fa-solid fa-chevron-left"></i></a>
-    </div>
-
-    <div class="hero-edit">
-        <div class="avatar-edit-container">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=254&auto=format&fit=crop"
-                id="avatarPreview" class="avatar-preview" alt="Avatar">
-            <div class="edit-camera-icon"><i class="fa-solid fa-camera"></i></div>
-        </div>
-        <h1 style="font-size: 1.5rem; font-weight: 900;">Edit Profile</h1>
-    </div>
-
-    <div class="form-content">
-        <h2 class="section-h">Public Profile</h2>
+    <div class="edit-card">
+        <i class="fa-solid fa-xmark close-btn" onclick="window.location.href='../../home.html#profile'"></i>
         
-        <div class="input-group">
-            <label>Full Name</label>
-            <input type="text" id="userName" placeholder="Your name">
+        <div class="header">
+            <i class="fa-solid fa-user"></i>
+            <h1>Edit Profile</h1>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="avatar-section">
+            <div class="avatar-container">
+                <img id="avatarPreview" src="../../images/guest_avatar.png" class="avatar-img" alt="Avatar">
+                <div class="edit-badge" onclick="document.getElementById('pfpInput').click()">
+                    <i class="fa-solid fa-pencil"></i>
+                </div>
+            </div>
+            <input type="file" id="pfpInput" hidden accept="image/*">
         </div>
 
         <div class="input-group">
-            <label>Avatar URL</label>
-            <input type="text" id="avatarUrl" placeholder="https://..." oninput="document.getElementById('avatarPreview').src = this.value">
+            <label>Display Name</label>
+            <div class="input-wrapper">
+                <input type="text" id="displayName" placeholder="Enter your name">
+            </div>
         </div>
 
-        <div class="input-group">
-            <label>Bio / About Me</label>
-            <textarea id="userBio" rows="4" placeholder="Tell us something about yourself..."></textarea>
-        </div>
+        <button class="save-btn" id="saveBtn" onclick="saveProfile()">Save Changes</button>
 
-        <button class="save-btn" onclick="saveProfile()">Save Changes</button>
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Crop Modal -->
+    <div id="cropModal" class="crop-modal-overlay">
+        <div class="crop-container">
+            <img id="cropTarget" src="">
+        </div>
+        <div class="crop-btns">
+            <button class="btn-crop-action btn-crop-cancel" onclick="closeCropModal()">Cancel</button>
+            <button class="btn-crop-action btn-crop-save" onclick="saveCrop()">Crop & Save</button>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if (userData) {
-                if (userData.name) document.getElementById('userName').value = userData.name;
-                if (userData.avatar) {
-                    document.getElementById('avatarUrl').value = userData.avatar;
-                    document.getElementById('avatarPreview').src = userData.avatar;
+        const authConfig = {
+            apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
+            authDomain: "anishift-5d14b.firebaseapp.com",
+            databaseURL: "https://anishift-5d14b-default-rtdb.firebaseio.com",
+            projectId: "anishift-5d14b",
+            storageBucket: "anishift-5d14b.firebasestorage.app",
+            messagingSenderId: "390267133940",
+            appId: "1:390267133940:web:a735ebcab0c60295bc23a1"
+        };
+        firebase.initializeApp(authConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let cropper;
+        const avatarPreview = document.getElementById('avatarPreview');
+        const pfpInput = document.getElementById('pfpInput');
+        const cropModal = document.getElementById('cropModal');
+        const cropTarget = document.getElementById('cropTarget');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('displayName').value = user.displayName || "";
+                if (user.photoURL) avatarPreview.src = user.photoURL;
+            } else {
+                // Check localStorage for guests
+                const userData = JSON.parse(localStorage.getItem('userData'));
+                if (userData) {
+                    document.getElementById('displayName').value = userData.name || "";
+                    if (userData.avatar) avatarPreview.src = userData.avatar;
                 }
-                if (userData.bio) document.getElementById('userBio').value = userData.bio;
             }
         });
 
-        function saveProfile() {
-            const name = document.getElementById('userName').value;
-            const avatar = document.getElementById('avatarUrl').value;
-            const bio = document.getElementById('userBio').value;
+        pfpInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    cropTarget.src = event.target.result;
+                    openCropModal();
+                };
+                reader.readAsDataURL(file);
+            }
+        };
 
-            const userData = { name, avatar, bio };
-            localStorage.setItem('userData', JSON.stringify(userData));
-            
-            alert('Profile updated successfully!');
-            window.location.href = '../../profile.html';
+        function openCropModal() {
+            cropModal.style.display = 'flex';
+            if (cropper) cropper.destroy();
+            setTimeout(() => {
+                cropper = new Cropper(cropTarget, {
+                    aspectRatio: 1,
+                    viewMode: 2,
+                    guides: false,
+                    autoCropArea: 1,
+                });
+            }, 300);
+        }
+
+        function closeCropModal() {
+            cropModal.style.display = 'none';
+            if (cropper) cropper.destroy();
+            pfpInput.value = "";
+        }
+
+        async function saveCrop() {
+            loadingOverlay.style.display = 'flex';
+            const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('image', blob);
+
+                try {
+                    const res = await fetch('https://api.imgbb.com/1/upload?key=609e6c2fbfb18e2fb9c18f31428ad8b9', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        const newUrl = result.data.url;
+                        const user = auth.currentUser;
+                        
+                        if (user) {
+                            await user.updateProfile({ photoURL: newUrl });
+                            await db.collection('users').doc(user.uid).set({ avatar: newUrl }, { merge: true });
+                        }
+                        
+                        // Update UI & LocalStorage
+                        avatarPreview.src = newUrl;
+                        const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                        userData.avatar = newUrl;
+                        localStorage.setItem('userData', JSON.stringify(userData));
+
+                        closeCropModal();
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Upload failed. Try again.");
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            }, 'image/jpeg', 0.85);
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById('displayName').value;
+            if (!name) return alert("Please enter a name");
+
+            loadingOverlay.style.display = 'flex';
+            try {
+                const user = auth.currentUser;
+                if (user) {
+                    await user.updateProfile({ displayName: name });
+                    await db.collection('users').doc(user.uid).set({ name: name }, { merge: true });
+                }
+                
+                // Update LocalStorage
+                const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                userData.name = name;
+                localStorage.setItem('userData', JSON.stringify(userData));
+
+                alert("Profile updated successfully!");
+                window.location.href = '../../home.html#profile';
+            } catch (e) {
+                console.error(e);
+                alert("Update failed. Try again.");
+            } finally {
+                loadingOverlay.style.display = 'none';
+            }
         }
     </script>
-    <script src="../../../anishift_ads.js"></script>
+    <script>
+        // Phone Back Button Fix
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Capacitor && window.Capacitor.Plugins.App) {
+                const App = window.Capacitor.Plugins.App;
+                App.addListener('backButton', ({ canGoBack }) => {
+                    if (canGoBack) {
+                        window.history.back();
+                    } else {
+                        App.exitApp();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
+
 </html>

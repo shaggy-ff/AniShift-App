@@ -41,6 +41,8 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         html {
@@ -207,8 +209,15 @@
         }
 
         @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         /* === UPDATE OVERLAY === */
@@ -714,7 +723,7 @@
 
         /* === DISCOVER VIEW STYLES === */
         .hero-discover {
-            height: 10rem;
+            height: 14rem;
             background: linear-gradient(to bottom, rgba(30, 144, 255, 0.1), var(--bg-main)), url('images/discover_bg.png');
             background-size: cover;
             background-position: center;
@@ -817,7 +826,7 @@
 
         /* === COMMUNITY VIEW STYLES === */
         .hero-community {
-            height: 10rem;
+            height: 14rem;
             background: linear-gradient(to bottom, rgba(30, 144, 255, 0.1), var(--bg-main)), url('images/community_bg.png');
             background-size: cover;
             background-position: center;
@@ -935,13 +944,16 @@
 
         .post-img {
             display: block;
-            width: auto;
-            max-width: 240px;
-            max-height: 160px;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 350px;
             object-fit: cover;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.4s ease-out;
         }
 
         .post-footer {
@@ -1384,8 +1396,6 @@
         <div class="header-content">
             <div class="avatar-wrap">
                 <img id="userAvatarDisp" src="images/guest_avatar.png" class="avatar" alt="User">
-                <input type="file" id="pfpInput" hidden accept="image/*">
-                <button class="btn-edit-photo" onclick="handleEditPhoto()">Edit Photo</button>
             </div>
             <div class="user-details">
                 <h1 id="userNameDisp">OtakuMaster99</h1>
@@ -1407,9 +1417,12 @@
                     <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
                 </a>
                 <a href="javascript:void(0)" class="menu-item" style="opacity: 0.8;">
-                    <div class="menu-left"><i class="fa-solid fa-crown" style="color: #ffd700;"></i> <span>Ads-Free Experience</span></div>
+                    <div class="menu-left"><i class="fa-solid fa-crown" style="color: #ffd700;"></i> <span>Ads-Free
+                            Experience</span></div>
                     <div class="menu-right">
-                        <span style="background: #ffd700; color: #000; font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-weight: 800; text-transform: uppercase;">Coming Soon</span>
+                        <span
+                            style="background: #ffd700; color: #000; font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 0.5rem; font-weight: 800; text-transform: uppercase;">Coming
+                            Soon</span>
                     </div>
                 </a>
             </div>
@@ -1432,7 +1445,8 @@
                 <div class="menu-left"><i class="fa-regular fa-file-lines"></i> <span>Terms & Conditions</span></div>
                 <div class="menu-right"><i class="fa-solid fa-chevron-right"></i></div>
             </a>
-            <a id="logoutBtn" href="javascript:void(0)" onclick="showLogoutModal()" class="menu-item" style="color: #ff4757;">
+            <a id="logoutBtn" href="javascript:void(0)" onclick="showLogoutModal()" class="menu-item"
+                style="color: #ff4757;">
                 <div class="menu-left"><i class="fa-solid fa-arrow-right-from-bracket" style="color: #ff4757;"></i>
                     <span style="color: #ff4757;">Log Out</span>
                 </div>
@@ -1443,21 +1457,7 @@
 
     <div id="filterOverlay" class="filter-overlay" onclick="closeFilter()"></div>
 
-    <!-- CROP MODAL -->
-    <div id="cropModal" class="filter-modal" style="height: 85vh; padding: 1.5rem;">
-        <div class="modal-header">
-            <h3>Crop Photo</h3><i class="fa-solid fa-xmark" onclick="closeCropModal()"></i>
-        </div>
-        <div
-            style="flex: 1; overflow: hidden; margin-top: 1rem; border-radius: 12px; background: #000; display: flex; align-items: center; justify-content: center;">
-            <img id="cropTarget" style="max-width: 100%; display: block;">
-        </div>
-        <button id="saveCropBtn" class="guest-login-btn" style="margin-top: 1.5rem; width: 100%;">
-            <span id="cropBtnText">Save & Upload</span>
-            <i id="cropBtnSpinner" class="fa-solid fa-circle-notch fa-spin"
-                style="display: none; margin-left: 8px;"></i>
-        </button>
-    </div>
+
     <div id="filterModal" class="filter-modal">
         <div class="modal-header">
             <h3>Refine Search</h3><i class="fa-solid fa-xmark" onclick="closeFilter()"></i>
@@ -2097,11 +2097,11 @@
             if (!auth.currentUser) {
                 openLoginModal('https://i.ibb.co/3WfK9mP/logo.png');
                 return;
-            }            if (type === 'like') {
+            } if (type === 'like') {
                 const uid = auth.currentUser.uid;
                 const postRef = rtdb.ref(`community_posts/${id}`);
                 const likeRef = postRef.child(`likedBy/${uid}`);
-                
+
                 const snap = await likeRef.get();
                 if (snap.exists()) {
                     // Unlike
@@ -2201,100 +2201,6 @@
         });
 
         // PROFILE LOGIC
-        let cropper;
-        function handleEditPhoto() {
-            if (!auth.currentUser) {
-                openLoginModal('images/guest_avatar.png');
-                return;
-            }
-            document.getElementById('pfpInput').click();
-        }
-
-        document.getElementById('pfpInput').onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = document.getElementById('cropTarget');
-                    img.src = event.target.result;
-                    openCropModal();
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-
-        function openCropModal() {
-            document.getElementById('filterOverlay').style.display = 'block';
-            document.getElementById('cropModal').classList.add('active');
-            const img = document.getElementById('cropTarget');
-            if (cropper) cropper.destroy();
-            setTimeout(() => {
-                cropper = new Cropper(img, {
-                    aspectRatio: 1,
-                    viewMode: 2,
-                    guides: false,
-                    autoCropArea: 1,
-                });
-            }, 300);
-        }
-
-        function closeCropModal() {
-            document.getElementById('filterOverlay').style.display = 'none';
-            document.getElementById('cropModal').classList.remove('active');
-            if (cropper) cropper.destroy();
-        }
-
-        document.getElementById('saveCropBtn').onclick = async () => {
-            const btnText = document.getElementById('cropBtnText');
-            const spinner = document.getElementById('cropBtnSpinner');
-            const btn = document.getElementById('saveCropBtn');
-
-            btn.disabled = true;
-            btnText.textContent = 'Uploading...';
-            spinner.style.display = 'inline-block';
-
-            const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
-            canvas.toBlob(async (blob) => {
-                const formData = new FormData();
-                formData.append('image', blob);
-
-                try {
-                    const res = await fetch('https://api.imgbb.com/1/upload?key=609e6c2fbfb18e2fb9c18f31428ad8b9', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const result = await res.json();
-
-                    if (result.success) {
-                        const newUrl = result.data.url;
-                        const user = auth.currentUser;
-                        if (!user) throw new Error("No user logged in");
-
-                        await user.updateProfile({ photoURL: newUrl });
-                        await db.collection('users').doc(user.uid).set({ avatar: newUrl }, { merge: true });
-
-                        // Update UI
-                        document.getElementById('userAvatarDisp').src = newUrl;
-                        const userData = JSON.parse(localStorage.getItem('userData')) || {};
-                        userData.avatar = newUrl;
-                        localStorage.setItem('userData', JSON.stringify(userData));
-
-                        closeCropModal();
-                        showToast('Profile photo updated!');
-                    } else {
-                        throw new Error('Upload failed');
-                    }
-                } catch (e) {
-                    console.error(e);
-                    showToast('Error updating photo. Try again.');
-                } finally {
-                    btn.disabled = false;
-                    btnText.textContent = 'Save & Upload';
-                    spinner.style.display = 'none';
-                }
-            }, 'image/jpeg', 0.85);
-        };
-
         function showToast(msg) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').textContent = msg;
@@ -2303,10 +2209,16 @@
         }
 
         function initProfile() {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if (userData) {
-                if (userData.name) document.getElementById('userNameDisp').textContent = userData.name;
-                if (userData.avatar) document.getElementById('userAvatarDisp').src = userData.avatar;
+            const user = auth.currentUser;
+            if (user) {
+                if (user.displayName) document.getElementById('userNameDisp').textContent = user.displayName;
+                if (user.photoURL) document.getElementById('userAvatarDisp').src = user.photoURL;
+            } else {
+                const userData = JSON.parse(localStorage.getItem('userData'));
+                if (userData) {
+                    if (userData.name) document.getElementById('userNameDisp').textContent = userData.name;
+                    if (userData.avatar) document.getElementById('userAvatarDisp').src = userData.avatar;
+                }
             }
         }
 
@@ -2345,6 +2257,21 @@
         };
     </script>
     <script src="../anishift_ads.js"></script>
+    <script>
+        // Phone Back Button Fix
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Capacitor && window.Capacitor.Plugins.App) {
+                const App = window.Capacitor.Plugins.App;
+                App.addListener('backButton', ({ canGoBack }) => {
+                    if (canGoBack) {
+                        window.history.back(); // කලින් පිටුවක් තියෙනවා නම් ඒකට යන්න
+                    } else {
+                        App.exitApp(); // මුල්ම පිටුවේ ඉන්නවා නම් විතරක් ඇප් එකෙන් එළියට යන්න
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

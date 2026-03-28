@@ -7,12 +7,17 @@
     if (excludedPages.includes(currentPage)) return;
 
     let adClicks = parseInt(localStorage.getItem('anishift_ad_clicks') || '0');
+    let currentThreshold = parseInt(localStorage.getItem('anishift_ad_thresh') || '10');
 
     function handleGlobalTap() {
         adClicks++;
         localStorage.setItem('anishift_ad_clicks', adClicks);
-        if (adClicks >= 10) {
+        
+        if (adClicks >= currentThreshold) {
+            // Set next random threshold between 5 and 15 clicks
             localStorage.setItem('anishift_ad_clicks', '0');
+            localStorage.setItem('anishift_ad_thresh', Math.floor(Math.random() * 11) + 5);
+
             const returnTo = encodeURIComponent(window.location.href);
             
             // Calculate path to add.html

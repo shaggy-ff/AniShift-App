@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Support Us - AniShift</title>
+
+    <!-- Preconnect to speed up ad delivery -->
+    <link rel="preconnect" href="https://quge5.com" crossorigin>
+    <link rel="dns-prefetch" href="https://quge5.com">
+    <link rel="preload" href="https://quge5.com/88/tag.min.js" as="script">
+
+    <!-- Ad Script -->
     <script src="https://quge5.com/88/tag.min.js" data-zone="223477" async data-cfasync="false"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-main: #000000;
@@ -39,7 +50,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2.5rem;
+            gap: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .logo-box {
@@ -56,10 +80,29 @@
 
         .message {
             font-size: 0.95rem;
-            font-weight: 700;
+            font-weight: 600;
             line-height: 1.6;
-            color: #ffffff;
-            letter-spacing: -0.01em;
+            color: #d1d5db;
+        }
+
+        #ad-status {
+            margin: 1rem 0;
+        }
+
+        .loader {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 0.75rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .btn-continue {
@@ -68,20 +111,29 @@
             border: 1.2px solid #ffffff;
             padding: 0.85rem 3rem;
             font-size: 0.85rem;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.05em;
             cursor: pointer;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: lowercase;
+            transition: 0.3s;
+            text-transform: uppercase;
             margin-top: 1rem;
+            opacity: 0.3;
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        .btn-continue.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .btn-continue:active {
             transform: scale(0.96);
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo-box">
@@ -89,23 +141,91 @@
         </div>
 
         <p class="message">
-            Sorry for the interruption with the ads! 🙏 We've added a few ads just to help cover our server costs so we can keep AniShift 100% free for everyone. Thank you so much for your amazing support! 💖
+            Thanks for supporting AniShift! Ads help us keep the platform 100% free and high-quality for everyone. 🙏
         </p>
 
-        <button class="btn-continue" onclick="continueApp()">continu app</button>
+        <div id="ad-status">
+            <div class="loader"></div>
+            <p
+                style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05rem;">
+                Preparing Ads...
+            </p>
+        </div>
+
+        <button id="main-btn" class="btn-continue" onclick="continueApp()">Wait 5s...</button>
     </div>
 
     <script>
+        let timeLeft = 5;
+        const btn = document.getElementById('main-btn');
+        const statusDiv = document.getElementById('ad-status');
+
+        // Check if user already clicked the ad in this session
+        const adClicked = sessionStorage.getItem('anishift_ad_clicked');
+
+        if (adClicked) {
+            // Bypass timer if already clicked
+            timeLeft = 0;
+            btn.textContent = 'Enter App Now';
+            btn.classList.add('active');
+            statusDiv.innerHTML = '<p style="color: #2ed573; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Ad Verified! Thank you</p>';
+        } else {
+            // Start Countdown Logic
+            const countdown = setInterval(() => {
+                timeLeft--;
+                btn.textContent = `Wait ${timeLeft}s...`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    btn.textContent = 'Continue (Click to Open Ad)';
+                    btn.classList.add('active');
+
+                    statusDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        statusDiv.innerHTML = '<p style="color: #2ed573; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Ready! Support Us</p>';
+                        statusDiv.style.opacity = '1';
+                    }, 300);
+                }
+            }, 1000);
+        }
+
         function continueApp() {
-            // Check if there is a redirect URL in params
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirect = urlParams.get('redirect');
-            if (redirect) {
-                window.location.href = redirect;
+            if (!sessionStorage.getItem('anishift_ad_clicked')) {
+                // First click: Open ad and reload this page
+                sessionStorage.setItem('anishift_ad_clicked', 'true');
+                window.open('https://omg10.com/4/10787829', '_blank');
+
+                // Redirect back to this same ad page (Reload)
+                window.location.reload();
             } else {
-                window.location.href = 'anishift.app/home.html';
+                // Second click: Proceed to App
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+                if (redirect) {
+                    window.location.href = redirect;
+                } else {
+                    window.location.href = 'anishift.app/home.html';
+                }
             }
         }
+
+        // Prevent Back Button (Browser)
+        history.pushState(null, null, window.location.href);
+        window.onpopstate = function() {
+            history.pushState(null, null, window.location.href);
+        };
+
+        // Phone Back Button Fix (Capacitor)
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.Capacitor && window.Capacitor.Plugins.App) {
+                const App = window.Capacitor.Plugins.App;
+                App.addListener('backButton', () => {
+                    // Do nothing on back button click
+                    console.log('Back button disabled on ad page');
+                });
+            }
+        });
     </script>
 </body>
+
 </html>
