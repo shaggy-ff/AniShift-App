@@ -1658,6 +1658,25 @@
             margin: 1.5rem 1.25rem 0;
             border: 1px solid var(--glass-border);
         }
+
+        /* Role Badges */
+        .role-badge {
+            font-size: 0.55rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .role-badge.admin {
+            background: rgba(30, 144, 255, 0.2);
+            color: var(--accent-color);
+            border: 1px solid rgba(30, 144, 255, 0.3);
+        }
+        .role-badge.special {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
     </style>
 </head>
 
@@ -2206,7 +2225,8 @@
         const authApp = firebase.initializeApp(authConfig);
 
         const db = dbApp.firestore();
-        const rtdb = dbApp.database();
+        const rtdb = dbApp.database(); // Main Data
+        const rtdbWatch = authApp.database(); // Membership & Control
         const auth = authApp.auth();
 
         // --- GLOBAL SYSTEM CONTROL LOGIC ---
@@ -2241,7 +2261,7 @@
             const currentUser = auth.currentUser;
             if (currentUser && currentUser.email) {
                 const key = currentUser.email.toLowerCase().replace(/\./g, '_at_');
-                const userSnap = await rtdb.ref(`access_control/${key}`).once('value');
+                const userSnap = await rtdbWatch.ref(`access_control/${key}`).once('value');
                 const userData = userSnap.val();
                 if (userData) userRole = userData.role;
             }
@@ -2252,7 +2272,7 @@
             }
 
             // 2. Maintenance Check
-            const maintSnap = await rtdb.ref('system_control/maintenance').once('value');
+            const maintSnap = await rtdbWatch.ref('system_control/maintenance').once('value');
             const maint = maintSnap.val();
             if (maint && maint.active) {
                 blockScreen.style.display = 'flex';
@@ -2264,7 +2284,7 @@
             }
 
             // 3. Update Check
-            const updateSnap = await rtdb.ref('app_update').once('value');
+            const updateSnap = await rtdbWatch.ref('app_update').once('value');
             const update = updateSnap.val();
             if (update && update.active && (update.versionCode > currentBuild)) {
                 if (update.forced) {
@@ -2303,9 +2323,9 @@
                 if (user.photoURL) userAvatarDisp.src = user.photoURL;
                 else userAvatarDisp.src = 'images/guest_avatar.png';
 
-                // Real-time Badge/Premium Detection
+                // Real-time Badge/Premium Detection (Using Watch/Auth DB)
                 const emailKey = user.email.toLowerCase().replace(/\./g, '_at_');
-                rtdb.ref(`access_control/${emailKey}`).on('value', snap => {
+                rtdbWatch.ref(`access_control/${emailKey}`).on('value', snap => {
                     const data = snap.val();
                     if (data) {
                         const now = Date.now();
@@ -2739,7 +2759,11 @@
                         </div>
                         <div class="post-content">
                             <div class="post-user-meta">
-                                <h4>${post.authorName}</h4>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <h4>${post.authorName}</h4>
+                                    ${post.authorRole === 'admin' ? '<span class="role-badge admin">ADMIN</span>' : ''}
+                                    ${post.authorRole === 'subscriber' ? `<span class="role-badge special">${post.authorPackage || 'SPECIAL'}</span>` : ''}
+                                </div>
                                 <span>@${handle} • ${timeAgo(post.timestamp)}</span>
                             </div>
                             <div class="post-body">${post.body}</div>

@@ -18,17 +18,18 @@
                 if (user && user.email) {
                     const key = user.email.toLowerCase().replace(/\./g, '_at_');
                     // Using once to avoid keeping connection open (Save RTDB limits)
-                    rtdb.ref(`access_control/${key}`).once('value').then(snap => {
+                    rtdb.ref(`access_control/${key}`).on('value', snap => {
                         const data = snap.val();
                         if (data) {
                             const now = Date.now();
+                            const currentRole = data.role;
                             // If admin: bypass. If subscriber: check if not expired.
-                            if (data.role === 'admin' || (data.role === 'subscriber' && data.expiry > now)) {
+                            if (currentRole === 'admin' || (currentRole === 'subscriber' && data.expiry > now)) {
                                 isPremium = true;
                                 console.log("Premium Active: Ads Disabled");
                             } else {
                                 isPremium = false;
-                                console.log("Premium Expired or Not Active: Ads Enabled");
+                                console.log("Premium Status Inactive: Ads Enabled");
                             }
                         }
                     });

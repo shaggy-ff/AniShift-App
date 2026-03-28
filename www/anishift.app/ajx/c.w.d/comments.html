@@ -371,6 +371,26 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
+
+        /* Role Badges */
+        .role-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 800;
+            margin-left: 6px;
+            text-transform: uppercase;
+        }
+        .role-badge.admin {
+            background: rgba(30, 144, 255, 0.2);
+            color: var(--accent-color);
+            border: 1px solid rgba(30, 144, 255, 0.3);
+        }
+        .role-badge.special {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
     </style>
 </head>
 
@@ -445,13 +465,26 @@
         const dbApp = firebase.initializeApp(dbConfig, "dbApp");
         const authApp = firebase.initializeApp(authConfig);
         const rtdb = dbApp.database();
+        const rtdbWatch = authApp.database();
         const auth = authApp.auth();
 
         let replyingTo = null; // { id, name }
+        let currentUserRole = 'user';
+        let currentUserPackage = '';
 
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('currentUserAvatar').src = user.photoURL || '../../images/guest_avatar.png';
+                
+                // Sniff role for posting
+                const key = user.email.toLowerCase().replace(/\./g, '_at_');
+                rtdbWatch.ref(`access_control/${key}`).on('value', snap => {
+                    const data = snap.val();
+                    if (data) {
+                        currentUserRole = data.role || 'user';
+                        currentUserPackage = data.package || '';
+                    }
+                });
             }
         });
 
@@ -527,7 +560,11 @@
                                             <img src="${r.avatar || '../../images/guest_avatar.png'}" class="comment-avatar" style="width: 1.8rem; height: 1.8rem;">
                                             <div class="comment-main">
                                                 <div class="comment-box" style="padding: 0.5rem 0.75rem;">
-                                                    <div class="comment-user" style="font-size: 0.75rem;">${r.name}</div>
+                                                    <div class="comment-user" style="font-size: 0.75rem; justify-content: flex-start; gap: 6px;">
+                                                        ${r.name}
+                                                        ${r.authorRole === 'admin' ? '<span class="role-badge admin">ADMIN</span>' : ''}
+                                                        ${r.authorRole === 'subscriber' ? `<span class="role-badge special">${r.authorPackage || 'SPECIAL'}</span>` : ''}
+                                                    </div>
                                                     <div class="comment-text" style="font-size: 0.8rem;">${r.text}</div>
                                                 </div>
                                                 <div class="comment-footer">
@@ -548,7 +585,11 @@
                             <div class="comment-main">
                                 <div class="comment-box">
                                     <div class="comment-user">
-                                        <span>${c.name}</span>
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            <span>${c.name}</span>
+                                            ${c.authorRole === 'admin' ? '<span class="role-badge admin">ADMIN</span>' : ''}
+                                            ${c.authorRole === 'subscriber' ? `<span class="role-badge special">${c.authorPackage || 'SPECIAL'}</span>` : ''}
+                                        </div>
                                         <div class="menu-btn" onclick="toggleMenu('${id}')">
                                             <i class="fa-solid fa-ellipsis"></i>
                                         </div>
@@ -607,6 +648,8 @@
                     uid: user.uid,
                     name: user.displayName || 'User',
                     avatar: user.photoURL || '../../images/guest_avatar.png',
+                    authorRole: currentUserRole,
+                    authorPackage: currentUserPackage,
                     text: text,
                     time: Date.now()
                 };

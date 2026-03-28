@@ -198,15 +198,26 @@
             gap: 8px;
         }
 
-        input[type="file"] {
+        input[type="file"], input[type="text"] {
             width: 100%;
             padding: 1rem;
             background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed var(--border);
+            border: 1px solid var(--border);
             border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+            outline: none;
+        }
+
+        input[type="file"] {
+            border-style: dashed;
             color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-purple);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         /* Footer Action */
@@ -253,7 +264,7 @@
 
     <div class="container">
         <h1 class="hero-title">Confirm Payment</h1>
-        <p class="hero-sub">1 Month Premium Activation</p>
+        <p class="hero-sub" id="planDisplay">Supreme Member Activation (300)</p>
 
         <div class="bank-card">
             <div class="bank-title-row">
@@ -286,6 +297,9 @@
         </div>
 
         <div class="upload-section">
+            <div class="upload-title"><i class="fa-brands fa-whatsapp"></i> WhatsApp Number <span style="color:red">*</span></div>
+            <input type="text" id="whatsappInput" placeholder="Enter your WhatsApp number...">
+            
             <div class="upload-title"><i class="fa-solid fa-receipt"></i> Upload Slip Image</div>
             <input type="file" id="slipInput" accept="image/*">
             <p style="font-size: 0.75rem; color: #ffbc00; margin-top: 8px;">* Verification takes 1-24 hours</p>
@@ -299,6 +313,12 @@
     </div>
 
     <script>
+        // === PLAN HANDLING ===
+        let currentPlan = JSON.parse(sessionStorage.getItem('selectedPlan')) || { name: 'Supreme Member', price: '300', desc: '' };
+        document.addEventListener('DOMContentLoaded', () => {
+             document.getElementById('planDisplay').textContent = `${currentPlan.name} Activation (LKR ${currentPlan.price})`;
+        });
+
         // === FIREBASE CONFIG ===
         const authConfig = {
             apiKey: "AIzaSyDjSDssOvzvZEOZd1HE-SNGCyZbTp1gsIs",
@@ -321,9 +341,10 @@
         async function handlePayment() {
             const fileInput = document.getElementById('slipInput');
             const submitBtn = document.getElementById('submitBtn');
-            const user = auth.currentUser;
+            const whatsapp = document.getElementById('whatsappInput').value.trim();
 
             if (!user) return alert('Please login first.');
+            if (!whatsapp) return alert('Please enter your WhatsApp number.');
             if (!fileInput.files[0]) return alert('Please select a photo of your slip.');
 
             submitBtn.disabled = true;
@@ -341,8 +362,10 @@
                 await db.collection('pending_payments').add({
                     userId: user.uid,
                     userEmail: user.email,
+                    whatsappNo: document.getElementById('whatsappInput').value.trim() || 'Not Provided',
                     slipUrl: imgbbData.data.url,
                     status: 'pending',
+                    package: currentPlan.name + " (" + currentPlan.price + ")",
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     dateStr: new Date().toLocaleString()
                 });
