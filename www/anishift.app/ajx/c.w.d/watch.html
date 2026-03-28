@@ -770,15 +770,22 @@
             display: block;
         }
 
-        /* Loader */
-        #loader {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-size: 2.5rem;
-            color: var(--accent-color);
+        /* Skeleton Framework */
+        .skeleton {
+            background: linear-gradient(90deg, #11121a 25%, #1a1d26 50%, #11121a 75%);
+            background-size: 200% 100%;
+            animation: skeleton-shimmer 1.5s infinite linear;
+            border-radius: 0.8rem;
         }
+
+        @keyframes skeleton-shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-player { width: 100%; aspect-ratio: 16/9; }
+        .skeleton-title { height: 1.4rem; width: 70%; margin-bottom: 0.6rem; }
+        .skeleton-text { height: 12px; width: 100%; margin-bottom: 0.5rem; }
 
         #content {
             display: none;
@@ -788,7 +795,21 @@
 
 <body>
 
-    <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i></div>
+    <div id="loader" style="position:fixed; inset:0; background:var(--bg-main); z-index:9000;">
+        <div class="skeleton-player skeleton"></div>
+        <div style="padding: 1.5rem 1.25rem;">
+            <div class="skeleton-title skeleton"></div>
+            <div class="skeleton-text skeleton" style="width: 30%;"></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <div class="skeleton" style="flex: 1; height: 3rem;"></div>
+                <div class="skeleton" style="flex: 1; height: 3rem;"></div>
+            </div>
+            <div style="margin-top: 2rem;">
+                <div class="skeleton" style="width: 100%; height: 60px; margin-bottom: 1rem;"></div>
+                <div class="skeleton" style="width: 100%; height: 60px; margin-bottom: 1rem;"></div>
+            </div>
+        </div>
+    </div>
 
     <div id="content">
         <div class="nav-overlay">
