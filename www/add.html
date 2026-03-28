@@ -11,10 +11,11 @@
         rel="stylesheet">
     <style>
         :root {
-            --bg-main: #000000;
+            --bg-main: #0a0b10;
+            --bg-secondary: #14151e;
             --accent-color: #1e90ff;
             --text-light: #ffffff;
-            --text-muted: #9499a1;
+            --text-muted: #9ca3af;
         }
 
         * {
@@ -23,7 +24,6 @@
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent !important;
-            box-shadow: none !important;
             outline: none !important;
         }
 
@@ -38,6 +38,7 @@
             text-align: center;
             overflow: hidden;
             flex-direction: column;
+            transition: background 0.4s ease, color 0.4s ease;
         }
 
         .container {
@@ -51,21 +52,26 @@
         .logo-box img {
             max-width: 250px;
             height: auto;
+            transition: 0.3s;
+        }
+
+        html.light-theme .logo-box img {
+            filter: drop-shadow(0 0 1px rgba(0,0,0,0.8));
         }
 
         .message {
             font-size: 0.95rem;
             font-weight: 600;
             line-height: 1.6;
-            color: #d1d5db;
+            color: var(--text-muted);
         }
 
         .btn-continue {
             width: 100%;
-            padding: 1.2rem;
-            background: #1a1b26;
+            padding: 1.1rem;
+            background: var(--bg-card);
             color: var(--text-muted);
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
             border-radius: 3rem;
             font-size: 1rem;
             font-weight: 900;
@@ -79,6 +85,7 @@
             color: #000;
             cursor: pointer;
             border-color: var(--accent-color);
+            box-shadow: 0 5px 15px rgba(var(--accent-rgb, 30,144,255), 0.3);
         }
 
         #ad-status {
@@ -94,7 +101,9 @@
             display: flex;
             gap: 5px;
             margin-bottom: 10px;
+            justify-content: center;
         }
+
         .dot {
             width: 8px;
             height: 8px;
@@ -102,12 +111,26 @@
             border-radius: 50%;
             animation: bounce 1.4s infinite ease-in-out both;
         }
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
 
         @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1.0); }
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1.0);
+            }
         }
     </style>
 </head>
@@ -115,7 +138,7 @@
 <body>
     <div class="container">
         <div class="logo-box">
-            <img src="images/logo_full.png" alt="AniShift">
+            <img src="images/logo.png" alt="AniShift">
         </div>
 
         <p class="message">
@@ -123,7 +146,11 @@
         </p>
 
         <div id="ad-status">
-            <div class="loader-dots" id="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="loader-dots" id="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
             <span id="status-text">Initializing Ads...</span>
         </div>
 
@@ -138,7 +165,7 @@
         const btn = document.getElementById('main-btn');
         const statusText = document.getElementById('status-text');
         const dots = document.getElementById('dots');
-        
+
         // IMPORTANT: We use a specific visit-level flag to handle reloads
         // If we just clicked the ad, we should be in 'verified' mode
         const isVerified = sessionStorage.getItem('anishift_temp_verified') === 'true';
@@ -153,7 +180,7 @@
             const timer = setInterval(() => {
                 timeLeft--;
                 btn.textContent = `Please Wait ${timeLeft}s...`;
-                
+
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     enableAdStep();
@@ -192,10 +219,10 @@
             } else {
                 // Ad Step: Open ad and set flag
                 sessionStorage.setItem('anishift_temp_verified', 'true');
-                
+
                 // Open the ad
                 window.open('https://omg10.com/4/10787829', '_blank');
-                
+
                 // Reload to show the 'Enter' button
                 setTimeout(() => {
                     window.location.reload();
